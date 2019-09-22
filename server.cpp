@@ -143,6 +143,10 @@ int create_serv_socket(int port){
     
     return fd;
 }
+
+int create(word){
+    printf(word);
+}
 /*
 
 int main(void){
