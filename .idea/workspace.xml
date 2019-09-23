@@ -9,12 +9,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f32c13b0-d9ba-4976-baf2-2239a6ef5367" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/CSE589-Network.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CSE589-Network.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/server.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="f32c13b0-d9ba-4976-baf2-2239a6ef5367" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +61,7 @@
       <workItem from="1568672386238" duration="436000" />
       <workItem from="1569184223550" duration="7917000" />
       <workItem from="1569211826864" duration="392000" />
+      <workItem from="1569256237924" duration="19000" />
     </task>
     <servers />
   </component>
@@ -77,7 +73,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
