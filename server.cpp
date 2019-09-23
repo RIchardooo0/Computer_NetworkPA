@@ -149,7 +149,7 @@ void clientEnd(char *port){
 
         // two cases: loged in or not
         if(loged_in){
-            cout << "Loged In!" << endl;
+            cout << "Handle Loged In!" << endl;
         }else{
             select(fdmax+1, &readfds, NULL, NULL, NULL);
             if(FD_ISSET(0, &readfds)){
