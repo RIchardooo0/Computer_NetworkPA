@@ -1,9 +1,53 @@
 #include "header.h"
-#define SERV_PORT 6666
+
 using namespace std;
 
+#define SERV_PORT 6666
 #define STDIN 0
 #define RT_ERR -1
+
+//-----------------------------frequently used data---------------------------------//
+string myHostname;
+string myPort;
+string myIP;
+int sockfd;
+struct addrinfo *myAddrInfo;
+struct addrinfo hints;
+
+
+//------------------------------helper functions------------------------------------//
+// initialization, for server & client
+void initMyAddr(const char* port){
+    // myPort
+    myPort = port;
+    
+    // myHostname
+    char hostname[1024];
+    gethostname(hostname, sizeof(hostname));
+    myHostname = hostname;
+    
+    // myIP
+    struct hostent *ht = gethostbyname(myHostname);
+    for(int i = 0; ht->h_addr_list[i] != 0; i++){
+        void *addr;
+        char ip[INET_ADDRSTRLEN];
+        addr = &(ht->h_addr_list[i]);
+        inet_ntop(AF_INET, addr, ip, sizeof(ip));
+        myIP = ip;
+    }
+
+    // hints & myAddrInfo & sockfd
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    getaddrinfo(NULL, (const char*)myPort.c_str(), &myAddrInfo); // here change myPort back to c style string
+    sockfd = socket(myAddrInfo-ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
+    bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
+    freeaddrinfo(myAddrInfo);
+}
+
+
 //struct block_list{
 //
 //} ;
