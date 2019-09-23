@@ -17,39 +17,54 @@ void serverEnd(int server_port);
 void clientEnd(int client_port);
 int create_serv_socket(int port);
 
-int main(int argc, char **argv){
-    if(argc != 3)
-    {
-    cout<<"Please enter c/s and Port number"<<endl;
-        exit(-1);
-        }
-    if(*argv[1]=='s')
-    {
-        serverEnd(atoi(argv[2]));
+struct SocketObject{
+    int cfd;
+    string hostname;
+    string ip;
+    string port;
+    int num_msg_sent;
+    int num_msg_rcv;
+    string status;
+    vector<string> blockeduser;
+    vector<string> msgbuffer;
+
+    bool operator<(const SocketObject &rhs) const {
+        return atoi(port.c_str()) < atoi(rhs.port.c_str());
     }
-    else if(*argv[1]=='c')
-    {
-        clientEnd(atoi(argv[2]));
-    }
-    else{
-        cout<<"System out"<<endl;
-        exit(-1);
-    }
-    return 0;
+};
+vector<SocketObject> socketlist;
+
+SocketObject* setSocketObject(int cfd, string hostname, string ip, string port){
+    SocketObject* info = new SocketObject;
+    info->cdf = cfd;
+    info->hostname = hostname;
+    info->ip = ip;
+    info->port = port;
+    info->num_msg_sent = 0;
+    info->num_msg_rcv = 0;
+    info->status = "logged-in";
+
+    return info;
+
 }
 
-void clientEnd(int client_port){
-    
-    printf("hello %d",client_port);
-    
-//    while(1){
-//        cin.clear();
-//        cin.sync();
-//    }
-}
+//void clientEnd(int client_port){
+//
+//    printf("hello %d",client_port);
+//
+////    while(1){
+////        cin.clear();
+////        cin.sync();
+////    }
+//}
 
 
 void serverEnd(int server_port){
+//初始化结构体
+//    for(int i = 0; i<5; i++){
+//        socketlist[i] =
+//    }
+
     
     fd_set global_rdfs, current_rdfs;
     
@@ -72,16 +87,30 @@ void serverEnd(int server_port){
     maxfd = listenfd;
     
     while(1){
-        cin.clear();
-        cin.sync();
+        fflush(STDOUT);
         current_rdfs = global_rdfs;
         if(select(maxfd+1, &current_rdfs,NULL,NULL,NULL)<0){
             perror("select error.\n");
             exit(-1);
+        }else if(select(maxfd+1, &current_rdfs,NULL,NULL,NULL) == 0 ){
+            perror("Select time out.\n");
+            exit(-1);
         }
+
         for(i = 0;i <= maxfd; i++){
             if(FD_ISSET(i,&current_rdfs)){
-                if(listenfd == i){
+
+                //键盘输入
+                if(STDIN == i){
+                    string msg = '';
+                    if((getline(cin,msg)== NULL)){
+                        exit(-1)
+                    }
+
+                }
+
+                //创造连接
+                else if(listenfd == i){
                     if((connfd = accept(listenfd, (struct sockaddr*)&client_addr,(socklen_t*)&len))<0){
                         perror("accept error.\n");
                         exit(-1);
@@ -91,7 +120,9 @@ void serverEnd(int server_port){
                     FD_CLR(i, &current_rdfs);
                     maxfd = maxfd >connfd? maxfd:connfd;
                     FD_SET(connfd,&global_rdfs);
-                }else{
+                }
+                //信息交流
+                else{
                     
                     bytes = recv(i, buf, BUFSIZ, 0 );
                     if(bytes<0){
@@ -127,7 +158,7 @@ int create_serv_socket(int port){
     bzero(&my_addrs, sizeof(my_addrs));
     my_addrs.sin_family = AF_INET;
     my_addrs.sin_port = htons(port);
-    my_addrs.sin_addr.s_addr = INADDR_ANY;
+    my_addrs.sin_addr.s_addr = htonl(INADDR_ANY);
     
     if(bind(fd, (struct sockaddr*)&my_addrs, sizeof(struct sockaddr_in)) != 0){
         perror("Binding error.\n");
@@ -135,7 +166,7 @@ int create_serv_socket(int port){
     }else{
         printf("Binding successful");
     }
-    if(listen(fd, 128)<0){
+    if(listen(fd, 256)<0){
         perror("listen failed");
     }else{
         printf("listen created");
@@ -144,8 +175,25 @@ int create_serv_socket(int port){
     return fd;
 }
 
-int create(word){
-    printf(word);
+int main(int argc, char **argv){
+    if(argc != 3)
+    {
+        cout<<"Please enter c/s and Port number"<<endl;
+        exit(-1);
+    }
+    if(*argv[1]=='s')
+    {
+        serverEnd(atoi(argv[2]));
+    }
+    else if(*argv[1]=='c')
+    {
+        clientEnd(atoi(argv[2]));
+    }
+    else{
+        cout<<"System out"<<endl;
+        exit(-1);
+    }
+    return 0;
 }
 /*
 
