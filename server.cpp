@@ -6,6 +6,7 @@ using namespace std;
 #define STDIN 0
 #define RT_ERR -1
 
+
 //-----------------------------frequently used data---------------------------------//
 string myHostname;
 string myPort;
@@ -14,10 +15,14 @@ int sockfd;
 struct addrinfo *myAddrInfo;
 struct addrinfo hints;
 
+fd_set masterfds;
+fd_set readfds;
+int fdmax;
+
 
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
-void initMyAddr(const char* port){
+void initMyAddr(const char *port){
     // myPort
     myPort = port;
     
@@ -46,6 +51,115 @@ void initMyAddr(const char* port){
     bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
     freeaddrinfo(myAddrInfo);
 }
+
+
+//----------------------------cse4589_print_and_log---------------------------------//
+// packaged functions for log
+void log_ERROR(string cmd) {
+  cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
+  cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+}
+void log_IP(){
+	const char* command = "IP";
+	cse4589_print_and_log("[%s:SUCCESS]\n", command);
+	cse4589_print_and_log("IP:%s\n", myIP.c_str());
+	cse4589_print_and_log("[%s:END]\n", command);
+}
+void log_AUTHOR() {
+	const char* command = "AUTHOR";
+	cse4589_print_and_log("[%s:SUCCESS]\n", command);
+	//string ubit_name_1 = "";
+	string ubit_name_2 = "xingyuya";
+	cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name_2.c_str());
+	cse4589_print_and_log("[%s:END]\n", command);
+}
+void log_PORT() {
+	const char* command = "PORT";
+	cse4589_print_and_log("[%s:SUCCESS]\n", command);
+	cse4589_print_and_log("PORT:%d\n", myPORT);
+	cse4589_print_and_log("[%s:END]\n", command);
+}
+void log_LIST() {
+	string cmd = "LIST";
+	cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+	sort(socketlist.begin(), socketlist.end());
+  	for (unsigned int i = 0; i < socketlist.size(); ++i) {
+    	cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
+                          socketlist[i].hostname.c_str(),
+                          socketlist[i].ip.c_str(), str_to_int(socketlist[i].port));
+  }
+  cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+}
+void log_EVENT(string client_ip, string msg) {
+	const char* command = "EVENT";
+	cse4589_print_and_log("[%s:SUCCESS]\n", command);
+	cse4589_print_and_log("msg from:%s\n[msg]:%s\n", client_ip.c_str(), msg.c_str());
+	cse4589_print_and_log("[%s:END]\n", command);
+}
+void log_STATISTICS() {
+	string command = "STATISTICS";
+    cse4589_print_and_log("[%s:SUCCESS]\n", command.c_str());
+    sort(socketlist.begin(), socketlist.end());
+  	for (unsigned int i = 0; i < socketlist.size(); ++i) {
+    cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
+                          socketlist[i].hostname.c_str(),
+                          socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
+                          socketlist[i].status.c_str());
+  }
+  cse4589_print_and_log("[%s:END]\n", command.c_str());
+}
+void log_EVENTS(string from_ip, string msg, string to_ip) {
+	const char* command = "EVENT";
+	cse4589_print_and_log("[%s:SUCCESS]\n", command);
+	cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", from_ip, to_ip, msg);
+	cse4589_print_and_log("[%s:END]\n", command);
+}
+void log_BLOCKED(string cli_ip) {
+		string cmd = "BLOCKED";
+	    if (!valid_ip(cli_ip) < 0 || InSetSocket(cli_ip) == NULL) {
+	    	log_Error(cmd);
+	    	return;
+		  }
+		  SocketObject* hd = InSetSocket(cli_ip);
+
+		  cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+		  for (int i = 0; i < hd->blockeduser.size(); ++i) {
+		    SocketObject* new_hd = InSetSocket(hd->blockeduser[i]);
+		    cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
+		                          new_hd->ip.c_str(), new_hd->port.c_str());
+		  }
+		  cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+}
+
+
+//----------------------------------clientEnd---------------------------------------//
+void clientEnd(char *port){
+    // client data
+    bool loged_in = false;
+    FD_ZERO(&masterfds);
+    FD_SET(0, &masterfds);
+    fdmax = 0;
+
+    // initialization
+    initMyAddr(port);
+    
+    // main loop handling instructions
+    while(true){
+        readfds = masterfds;
+
+        // two cases: loged in or not
+        if(loged_in){
+            cout << "Loged In!" << endl;
+        }else{
+            select(fdmax+1, &readfds, NULL, NULL, NULL);
+            if(FD_ISSET(0, &readfds)){
+            }
+            cout << "Please Login First!" << endl;
+        }
+    }
+}
+
+
 
 
 //struct block_list{
