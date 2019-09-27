@@ -86,12 +86,12 @@ SocketObject* InSetSocket(int cfd) {
     return NULL;
 }
 */
+
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
 void initMyAddr(const char* port){
     // myPort
     myPort = port;
-    char client_ip[BUFSIZ];
 
     // myHostname
     char hostname[1024];
@@ -99,27 +99,22 @@ void initMyAddr(const char* port){
     myHostname = hostname;
 
     // myIP
-    struct hostent *ht = gethostbyname(myHostname);
+    struct hostent *ht = gethostbyname(myHostname.c_str());
     for(int i = 0; ht->h_addr_list[i] != 0; i++){
-        void *addr;
-        char ip[32];
-        addr = &(ht->h_addr_list[i]);
-        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, sizeof(ip)));
-
-        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN));// 定义在netinet/in.h头文件中
-        myIP = ip;
+        struct in_addr in;
+        memcpy(&in, ht->h_addr_list[i], sizeof(struct in_addr));
+        myIP = inet_ntoa(in);
     }
     
     // hints & myAddrInfo & sockfd
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, (const char*)myPort.c_str(), &hints, &myAddrInfo); // here change myPort back to c style string
+
+    getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
     bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
-    printf("my ip is %s\t",
-           inet_ntop(AF_INET,myAddrInfo->ai_addr,client_ip,sizeof(client_ip)));
+    
     freeaddrinfo(myAddrInfo);
 }
 
@@ -255,7 +250,7 @@ void log_EVENTS(string from_ip, string msg, string to_ip) {
     cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_BLOCKED(string cli_ip) {
-    string cmd = "BLOCKED";
+    string cmd = "BLOCED";
     if (!valid_ip(cli_ip) < 0 || InSetSocket(cli_ip) == NULL) {
         log_Error(cmd);
         return;
@@ -273,8 +268,6 @@ void log_BLOCKED(string cli_ip) {
 //###############################################################
 */
 
-void clientEnd(string client_port){
-
 
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
@@ -289,7 +282,7 @@ void clientEnd(char *port){
     initMyAddr(port);
     
     // main loop handling instructions
-    while(true){
+    // while(true){
         // copy fds
         readfds = masterfds;
 
@@ -310,7 +303,7 @@ void clientEnd(char *port){
             }
             cout << "Please Login First!" << endl;
         }
-    }
+    // }
 }
 
 
@@ -484,4 +477,3 @@ int main(int argc, char **argv){
     }
     return 0;
 }
-
