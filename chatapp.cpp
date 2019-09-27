@@ -23,6 +23,7 @@ fd_set masterfds;
 fd_set readfds;
 int fdmax;
 
+/*
 //------------------------------data structure-------------------------------------//
 
 struct SocketObject{
@@ -84,10 +85,10 @@ SocketObject* InSetSocket(int cfd) {
     }
     return NULL;
 }
-
+*/
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
-int initMyAddr(const char* port){
+void initMyAddr(const char* port){
     // myPort
     myPort = port;
     char client_ip[BUFSIZ];
@@ -95,14 +96,16 @@ int initMyAddr(const char* port){
     // myHostname
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
-    const char* myHostname = hostname;
+    myHostname = hostname;
 
     // myIP
     struct hostent *ht = gethostbyname(myHostname);
     for(int i = 0; ht->h_addr_list[i] != 0; i++){
         void *addr;
-        char ip[INET_ADDRSTRLEN];
+        char ip[32];
         addr = &(ht->h_addr_list[i]);
+        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, sizeof(ip)));
+
         printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN));// 定义在netinet/in.h头文件中
         myIP = ip;
     }
@@ -112,15 +115,18 @@ int initMyAddr(const char* port){
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, (const char*)myPort.c_str(), &hints,&myAddrInfo); // here change myPort back to c style string
+    getaddrinfo(NULL, (const char*)myPort.c_str(), &hints, &myAddrInfo); // here change myPort back to c style string
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
     bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
     printf("my ip is %s\t",
-           inet_ntop(AF_INET,myAddrInfo->ai_addr,client_ip,INET_ADDRSTRLEN));
+           inet_ntop(AF_INET,myAddrInfo->ai_addr,client_ip,sizeof(client_ip)));
     freeaddrinfo(myAddrInfo);
-    return sockfd;
 }
 
+
+/*
+ 
+// tools functinos###########################
 //-----------------------------string processing------------------------------------//
 int char_to_int(char s) {
     if (s == '1') return 1;
@@ -264,6 +270,11 @@ void log_BLOCKED(string cli_ip) {
     }
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
+//###############################################################
+*/
+
+void clientEnd(string client_port){
+
 
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
@@ -331,7 +342,7 @@ void serverEnd(string server_port){
     len = sizeof(struct sockaddr_in);
     const char* charPort = server_port.c_str();
     //对准备maintain的struct初始化
-    sockfd = initMyAddr(charPort);
+    initMyAddr(charPort);
     listen(sockfd,BACKLOG);
     listenfd = sockfd;
 
@@ -404,8 +415,7 @@ void serverEnd(string server_port){
                         perror("accept error.\n");
                         exit(-1);
                     }
-                        printf("receive from %s at Port %d\n",inet_ntop(AF_INET, &client_addr.sin_addr,&str, sizeof(str)),
-                           ntohs(client_addr.sin_port));
+                    printf("receive from %s at Port %d\n",inet_ntop(AF_INET,&client_addr.sin_addr,&str, sizeof(str)),ntohs(client_addr.sin_port));
                     
                     
                     FD_CLR(i, &current_rdfs);
@@ -413,16 +423,16 @@ void serverEnd(string server_port){
                     FD_SET(connfd,&global_rdfs);
                     recv(connfd, charmsg, sizeof(charmsg),0);
                     msg = charmsg;
-                    split_msg(msg," ",msg_p);
+//                    split_msg(msg," ",msg_p);
                     
-                    switch(str_to_int(msg_p[0])){
-                        case 1:{
-                            
-                        }
-                        case 2:{
-                            
-                        }
-                    }
+//                    switch(str_to_int(msg_p[0])){
+//                        case 1:{
+//
+//                        }
+//                        case 2:{
+//
+//                        }
+//                    }
                     
                 }
                 //信息交流
