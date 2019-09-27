@@ -118,6 +118,15 @@ void initMyAddr(const char* port){
     freeaddrinfo(myAddrInfo);
 }
 
+// string splitor to get message instructions
+void split_msg(string &src, string &separator, vector<string> &dest){
+    stringstream sstrm(src);
+    string tmp;
+    char spt = separator.c_str()[0]; // assume the size of separator is always one char
+    while(getline(sstrm, tmp, spt)){
+        dest.push_back(tmp);
+    }
+}
 
 /*
  
@@ -143,29 +152,6 @@ int str_to_int(string str) {
         res += char_to_int(str[i]) * pow(10.0, double(len - i - 1));
     }
     return res;
-}
-
-void split_msg(string& src, const string& separator, vector<string>& dest){
-    string str = src;
-    string substring;
-    string::size_type start = 0, index;
-    dest.clear();
-    index = str.find_first_of(separator,start);
-    do
-    {
-        if (index != string::npos)
-        {
-            substring = str.substr(start,index-start );
-            dest.push_back(substring);
-            start =index+separator.size();
-            index = str.find(separator,start);
-            if (start == string::npos) break;
-        }
-    }while(index != string::npos);
-    
-    //the last part
-    substring = str.substr(start);
-    dest.push_back(substring);
 }
 
 bool valid_ip(string ip_test) {
