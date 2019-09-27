@@ -1,6 +1,4 @@
 #include "header.h"
-#include <math.h>
-#include <algorithm>
 using namespace std;
 
 #define SERV_PORT 6666
