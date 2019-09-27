@@ -1,5 +1,6 @@
 #include "header.h"
 
+
 using namespace std;
 
 #define SERV_PORT 6666
@@ -136,13 +137,8 @@ void split_msg(string &src, string &separator, vector<string> &dest){
 //-----------------------------string processing------------------------------------//
 
 bool valid_ip(string ip_test) {
-    int dot_num = 0;
-    for(int i = 0; i < ip_test.length(); ++i){
-        if(ip_test[i] == '.') {
-            dot_num++;
-        }
-    }
-    if(dot_num != 3) return false;
+    int num = count(ip_test.begin(),ip_test.end(),'.');
+    if(num != 3) return false;
     vector<string> ip_parts;
     split_msg(ip_test,".", ip_parts);
     for(int i = 0; i < 4; ++i){
@@ -332,9 +328,9 @@ void serverEnd(string server_port){
                     fflush(STDIN);
                     string msg ;
 //                    msg = charmsg.c_str();
-                    for(i = 0;i<n;i++)
-                        charmsg[i] = toupper(charmsg[i]);
-                    printf("%s",charmsg);
+//                    for(i = 0;i<n;i++)
+//                        charmsg[i] = toupper(charmsg[i]);
+//                    printf("%s",charmsg);
 //                    int choice;
 //                    if(msg_p[0] == "LIST"){choice = 1;}
 //                    if(msg_p[0] == "STATISTICS"){choice = 2;}
