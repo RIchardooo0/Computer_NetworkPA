@@ -10,17 +10,23 @@ using namespace std;
 
 void serverEnd(string server_port);
 void clientEnd(string client_port);
+
 //-----------------------------frequently used data---------------------------------//
+
 string myHostname;
 string myPort;
 string myIP;
 int sockfd;
 struct addrinfo *myAddrInfo;
 struct addrinfo hints;
-//------------------------------data structure-------------------------------------//
 
+fd_set masterfds;
+fd_set readfds;
+int fdmax;
 
 /*
+//------------------------------data structure-------------------------------------//
+
 struct SocketObject{
     int cfd;
     string hostname;
@@ -87,6 +93,7 @@ void initMyAddr(const char* port){
     // myPort
     myPort = port;
     char client_ip[BUFSIZ];
+
     // myHostname
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
@@ -99,9 +106,12 @@ void initMyAddr(const char* port){
         char ip[32];
         addr = &(ht->h_addr_list[i]);
         printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, sizeof(ip)));
+
+        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN));// 定义在netinet/in.h头文件中
         myIP = ip;
     }
-       // hints & myAddrInfo & sockfd
+    
+    // hints & myAddrInfo & sockfd
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -114,9 +124,11 @@ void initMyAddr(const char* port){
     freeaddrinfo(myAddrInfo);
 }
 
+
 /*
  
 // tools functinos###########################
+//-----------------------------string processing------------------------------------//
 int char_to_int(char s) {
     if (s == '1') return 1;
     if (s == '2') return 2;
@@ -129,6 +141,7 @@ int char_to_int(char s) {
     if (s == '9') return 9;
     return 0;
 }
+
 int str_to_int(string str) {
     int len = str.length();
     int res = 0;
@@ -160,6 +173,7 @@ void split_msg(string& src, const string& separator, vector<string>& dest){
     substring = str.substr(start);
     dest.push_back(substring);
 }
+
 bool valid_ip(string ip_test) {
     int dot_num = 0;
     for(int i = 0; i < ip_test.length(); ++i){
@@ -181,9 +195,8 @@ bool valid_ip(string ip_test) {
     return true;
 }
 
-
-//logger######################################
-void log_Error(string cmd) {
+//----------------------------------logger------------------------------------------//
+void log_ERROR(string cmd) {
     cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
@@ -196,8 +209,8 @@ void log_IP(){
 void log_AUTHOR() {
     const char* command = "AUTHOR";
     cse4589_print_and_log("[%s:SUCCESS]\n", command);
-    //string ubit_name_1 = "lchen76";
-    string ubit_name_2 = "ziangli";
+    //string ubit_name_1 = "";
+    string ubit_name_2 = "";
     cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name_2.c_str());
     cse4589_print_and_log("[%s:END]\n", command);
 }
@@ -263,14 +276,36 @@ void log_BLOCKED(string cli_ip) {
 
 void clientEnd(string client_port){
 
-    printf("hello %s",client_port.c_str());
 
-//    while(1){
+//----------------------------------clientEnd---------------------------------------//
+void clientEnd(char *port){
+    // client data
+    bool loged_in = false;
+    FD_ZERO(&masterfds);
+    FD_SET(0, &masterfds);
+    fdmax = 0;
 
-//    }
+    // initialization
+    initMyAddr(port);
+    
+    // main loop handling instructions
+    while(true){
+        readfds = masterfds;
+
+        // two cases: loged in or not
+        if(loged_in){
+            cout << "Handle Loged In!" << endl;
+        }else{
+            select(fdmax+1, &readfds, NULL, NULL, NULL);
+            if(FD_ISSET(0, &readfds)){
+            }
+            cout << "Please Login First!" << endl;
+        }
+    }
 }
 
 
+//----------------------------------serverEnd---------------------------------------//
 void serverEnd(string server_port){
 //初始化结构体
 //    for(int i = 0; i<5; i++){
@@ -418,56 +453,7 @@ void serverEnd(string server_port){
 }
 
 
-
-//int create_serv_socket(int port){
-//
-//    int fd;
-//    struct sockaddr_in my_addrs;
-//
-//
-//    // myHostname
-//    char hostname[1024];
-//    gethostname(&hostname, sizeof(hostname));
-//    myHostname = hostname;
-//
-//    // myIP
-//    struct hostent *ht = gethostbyname(myHostname);
-//    for(int i = 0; ht->h_addr_list[i] != 0; i++){
-//        void *addr;
-//        char ip[INET_ADDRSTRLEN];
-//        addr = &(ht->h_addr_list[i]);
-//        inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN);// 16 定义在netinet/in.h头文件中
-//        myIP = ip;
-//    }
-//    printf("this is my ip address %s",myIP);
-//    fd = socket(AF_INET, SOCK_STREAM, 0);
-//    if(fd < 0){
-//        perror("socket error.\n");
-//        exit(-1);
-//    }else{
-//        printf("Socket created\n");
-//    }
-//    bzero(&my_addrs, sizeof(my_addrs));
-//    my_addrs.sin_family = AF_INET;
-//    my_addrs.sin_port = htons(port);
-////    my_addrs.sin_addr.s_addr = htonl(INADDR_ANY);
-//    inet_pton(AF_INET, myIP, &my_addrs.sin_addr.s_addr);
-//
-//    if(bind(fd, (struct sockaddr*)&my_addrs, sizeof(struct sockaddr_in)) != 0){
-//        perror("Binding error.\n");
-//        exit(-1);
-//    }else{
-//        printf("Binding successful\n");
-//    }
-//    if(listen(fd, BACKLOG)<0){
-//        perror("listen failed\n");
-//    }else{
-//        printf("listen created\n");
-//    }
-//
-//    return fd;
-//}
-
+//---------------------------------Main Entry--------------------------------------//
 int main(int argc, char **argv){
     if(argc != 3)
     {
@@ -481,8 +467,7 @@ int main(int argc, char **argv){
     }
     else if(*argv[1]=='c')
     {
-        string port = argv[2];
-        clientEnd(port);
+        clientEnd(argv[2]);
     }
     else{
         printf("System out");
