@@ -1,4 +1,5 @@
 #include "header.h"
+
 using namespace std;
 
 #define SERV_PORT 6666
@@ -85,12 +86,12 @@ SocketObject* InSetSocket(int cfd) {
     return NULL;
 }
 */
+
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
 void initMyAddr(const char* port){
     // myPort
     myPort = port;
-    char client_ip[BUFSIZ];
 
     // myHostname
     char hostname[1024];
@@ -98,30 +99,34 @@ void initMyAddr(const char* port){
     myHostname = hostname;
 
     // myIP
-    struct hostent *ht = gethostbyname(myHostname);
+    struct hostent *ht = gethostbyname(myHostname.c_str());
     for(int i = 0; ht->h_addr_list[i] != 0; i++){
-        void *addr;
-        char ip[32];
-        addr = &(ht->h_addr_list[i]);
-        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, sizeof(ip)));
-
-        printf("my inside ip is %s\t",inet_ntop(AF_INET, addr, ip, INET_ADDRSTRLEN));// 定义在netinet/in.h头文件中
-        myIP = ip;
+        struct in_addr in;
+        memcpy(&in, ht->h_addr_list[i], sizeof(struct in_addr));
+        myIP = inet_ntoa(in);
     }
     
     // hints & myAddrInfo & sockfd
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, (const char*)myPort.c_str(), &hints, &myAddrInfo); // here change myPort back to c style string
+
+    getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
     bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
-    printf("my ip is %s\t",
-           inet_ntop(AF_INET,myAddrInfo->ai_addr,client_ip,sizeof(client_ip)));
+    
     freeaddrinfo(myAddrInfo);
 }
 
+// string splitor to get message instructions
+void split_msg(string &src, string &separator, vector<string> &dest){
+    stringstream sstrm(src);
+    string tmp;
+    char spt = separator.c_str()[0]; // assume the size of separator is always one char
+    while(getline(sstrm, tmp, spt)){
+        dest.push_back(tmp);
+    }
+}
 
 /*
  
@@ -147,29 +152,6 @@ int str_to_int(string str) {
         res += char_to_int(str[i]) * pow(10.0, double(len - i - 1));
     }
     return res;
-}
-
-void split_msg(string& src, const string& separator, vector<string>& dest){
-    string str = src;
-    string substring;
-    string::size_type start = 0, index;
-    dest.clear();
-    index = str.find_first_of(separator,start);
-    do
-    {
-        if (index != string::npos)
-        {
-            substring = str.substr(start,index-start );
-            dest.push_back(substring);
-            start =index+separator.size();
-            index = str.find(separator,start);
-            if (start == string::npos) break;
-        }
-    }while(index != string::npos);
-    
-    //the last part
-    substring = str.substr(start);
-    dest.push_back(substring);
 }
 
 bool valid_ip(string ip_test) {
@@ -249,7 +231,7 @@ void log_EVENTS(string from_ip, string msg, string to_ip) {
     cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_BLOCKED(string cli_ip) {
-    string cmd = "BLOCKED";
+    string cmd = "BLOCED";
     if (!valid_ip(cli_ip) < 0 || InSetSocket(cli_ip) == NULL) {
         log_Error(cmd);
         return;
@@ -267,11 +249,10 @@ void log_BLOCKED(string cli_ip) {
 //###############################################################
 */
 
-void clientEnd(string client_port){
-
 
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
+    
     // client data
     bool loged_in = false;
     FD_ZERO(&masterfds);
@@ -282,8 +263,14 @@ void clientEnd(char *port){
     initMyAddr(port);
     
     // main loop handling instructions
-    while(true){
+    // while(true){
+        // copy fds
         readfds = masterfds;
+
+        // save received message
+        char message[BUFSIZ];
+        string msg;
+        vector<string> msg_vec;
 
         // two cases: loged in or not
         if(loged_in){
@@ -291,10 +278,13 @@ void clientEnd(char *port){
         }else{
             select(fdmax+1, &readfds, NULL, NULL, NULL);
             if(FD_ISSET(0, &readfds)){
+                recv(0, message, BUFSIZ, 0);
+                msg = message;
+
             }
             cout << "Please Login First!" << endl;
         }
-    }
+    // }
 }
 
 
@@ -468,4 +458,3 @@ int main(int argc, char **argv){
     }
     return 0;
 }
-
