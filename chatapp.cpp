@@ -120,10 +120,9 @@ void initMyAddr(const char* port){
 }
 
 // string splitor to get message instructions
-void split_msg(string &src, string &separator, vector<string> &dest){
+void split_msg(string &src, char spt, vector<string> &dest){
     stringstream sstrm(src);
     string tmp;
-    char spt = separator.c_str()[0]; // assume the size of separator is always one char
     while(getline(sstrm, tmp, spt)){
         dest.push_back(tmp);
     }
