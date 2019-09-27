@@ -120,40 +120,20 @@ void initMyAddr(const char* port){
 }
 
 // string splitor to get message instructions
-void split_msg(string &src, string &separator, vector<string> &dest){
+void split_msg(string &src, char spt, vector<string> &dest){
     stringstream sstrm(src);
     string tmp;
-    char spt = separator.c_str()[0]; // assume the size of separator is always one char
     while(getline(sstrm, tmp, spt)){
         dest.push_back(tmp);
     }
 }
 
+
+// 我在服务器上试了下，c++有stoi()，能够直接用，不需要再写函数了
+
 /*
  
-// tools functinos###########################
 //-----------------------------string processing------------------------------------//
-int char_to_int(char s) {
-    if (s == '1') return 1;
-    if (s == '2') return 2;
-    if (s == '3') return 3;
-    if (s == '4') return 4;
-    if (s == '5') return 5;
-    if (s == '6') return 6;
-    if (s == '7') return 7;
-    if (s == '8') return 8;
-    if (s == '9') return 9;
-    return 0;
-}
-
-int str_to_int(string str) {
-    int len = str.length();
-    int res = 0;
-    for (int i = len - 1; i >= 0; --i) {
-        res += char_to_int(str[i]) * pow(10.0, double(len - i - 1));
-    }
-    return res;
-}
 
 bool valid_ip(string ip_test) {
     int num = count(ip_test.begin(),ip_test.end(),'.');
