@@ -1,6 +1,5 @@
 #include "header.h"
 
-
 using namespace std;
 
 #define SERV_PORT 6666
@@ -268,6 +267,7 @@ void log_BLOCKED(string cli_ip) {
 
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
+    
     // client data
     bool loged_in = false;
     FD_ZERO(&masterfds);
@@ -279,7 +279,13 @@ void clientEnd(char *port){
     
     // main loop handling instructions
     while(true){
+        // copy fds
         readfds = masterfds;
+
+        // save received message
+        char message[BUFSIZ];
+        string msg;
+        vector<string> msg_vec;
 
         // two cases: loged in or not
         if(loged_in){
@@ -287,6 +293,9 @@ void clientEnd(char *port){
         }else{
             select(fdmax+1, &readfds, NULL, NULL, NULL);
             if(FD_ISSET(0, &readfds)){
+                recv(0, message, BUFSIZ, 0);
+                msg = message;
+
             }
             cout << "Please Login First!" << endl;
         }
