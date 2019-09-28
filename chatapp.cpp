@@ -110,6 +110,7 @@ void initMyAddr(const char* port){
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
+	  hints.ai_flags = AI_PASSIVE;      
 
     getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
@@ -119,14 +120,19 @@ void initMyAddr(const char* port){
 }
 
 // string splitor to get message instructions
-void split_msg(string &src, char separator, vector<string> &dest){
+
+void split_msg(string &src, char spt, vector<string> &dest){
     stringstream sstrm(src);
     string tmp;
-    // assume the size of separator is always one char
-    while(getline(sstrm, tmp, separator)){
+    dest.clear();
+    while(getline(sstrm, tmp, spt)){
         dest.push_back(tmp);
     }
 }
+
+
+// 我在服务器上试了下，c++有stoi()，能够直接用，不需要再写函数了
+
 bool valid_ip(string ip_test) {
     int num = count(ip_test.begin(),ip_test.end(),'.');
     if(num != 3) return false;
@@ -142,31 +148,10 @@ bool valid_ip(string ip_test) {
     }
     return true;
 }
+
 /*
  
-// tools functinos###########################
 //-----------------------------string processing------------------------------------//
-int char_to_int(char s) {
-    if (s == '1') return 1;
-    if (s == '2') return 2;
-    if (s == '3') return 3;
-    if (s == '4') return 4;
-    if (s == '5') return 5;
-    if (s == '6') return 6;
-    if (s == '7') return 7;
-    if (s == '8') return 8;
-    if (s == '9') return 9;
-    return 0;
-}
-
-int str_to_int(string str) {
-    int len = str.length();
-    int res = 0;
-    for (int i = len - 1; i >= 0; --i) {
-        res += char_to_int(str[i]) * pow(10.0, double(len - i - 1));
-    }
-    return res;
-}
 
 
 
@@ -246,6 +231,11 @@ void log_BLOCKED(string cli_ip) {
     }
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
+// 我添加了一个函数，只负责log，并不实现EXIT中send() 给server message那部分
+void log_EXIT(){
+    cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
+    cse4589_print_and_log("[%s:END]\n", "EXIT");
+}
 //###############################################################
 */
 
@@ -253,11 +243,18 @@ void log_BLOCKED(string cli_ip) {
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
     
-    // client data
+    // client status
     bool loged_in = false;
+
+    // client socket
     FD_ZERO(&masterfds);
     FD_SET(0, &masterfds);
     fdmax = 0;
+    
+    // save received message
+    char message[BUFSIZ];
+    string msg;
+    vector<string> msg_vec;
 
     // initialization
     initMyAddr(port);
@@ -267,20 +264,42 @@ void clientEnd(char *port){
         // copy fds
         readfds = masterfds;
 
-        // save received message
-        char message[BUFSIZ];
-        string msg;
-        vector<string> msg_vec;
-
         // two cases: loged in or not
         if(loged_in){
+            // if already loged in
             cout << "Handle Loged In!" << endl;
         }else{
+            // if not loged in, listen to "stdio", for instructions
             select(fdmax+1, &readfds, NULL, NULL, NULL);
-            if(FD_ISSET(0, &readfds)){
-                recv(0, message, BUFSIZ, 0);
-                msg = message;
 
+            // two cases: 1) has new instruction 2) no instruction
+            if(FD_ISSET(0, &readfds)){
+                // 1) has new instruction
+                recv(0, message, BUFSIZ, 0);
+                msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+                split_msg(msg, ' ', msg_vec);
+                fflush(0); // 这里不flush的话，会有bug吗？
+                
+                // for different instructions
+                if(msg_vec[0] == "AUTHOR"){
+                    log_AUTHOR();
+                }
+                if(msg_vec[0] == "IP"){
+                    log_IP();
+                }
+                if(msg_vec[0] == "PORT"){
+                    log_PORT;
+                }
+                if(msg_vec[0] == "EXIT"){
+                    send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
+                    log_EXIT();
+                }
+                if(msg_vec[0] == "LOGIN"){
+
+                }
+            }else{
+                // 2) no instructions, continue to listening
+                continue;
             }
             cout << "Please Login First!" << endl;
         }
