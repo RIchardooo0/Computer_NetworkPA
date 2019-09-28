@@ -1,6 +1,5 @@
 #include "header.h"
 
-
 using namespace std;
 
 #define SERV_PORT 6666
@@ -111,7 +110,7 @@ void initMyAddr(const char* port){
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;      
+	  hints.ai_flags = AI_PASSIVE;      
 
     getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
@@ -121,6 +120,7 @@ void initMyAddr(const char* port){
 }
 
 // string splitor to get message instructions
+
 void split_msg(string &src, char spt, vector<string> &dest){
     stringstream sstrm(src);
     string tmp;
@@ -133,25 +133,27 @@ void split_msg(string &src, char spt, vector<string> &dest){
 
 // 我在服务器上试了下，c++有stoi()，能够直接用，不需要再写函数了
 
-/*
- 
-//-----------------------------string processing------------------------------------//
-
 bool valid_ip(string ip_test) {
     int num = count(ip_test.begin(),ip_test.end(),'.');
     if(num != 3) return false;
     vector<string> ip_parts;
-    split_msg(ip_test,".", ip_parts);
+    split_msg(ip_test,'.', ip_parts);
     for(int i = 0; i < 4; ++i){
         for(int j = 0; j < ip_parts[i].length(); ++j){
             if(ip_parts[i][j] > '9' || ip_parts[i][j] < '0') return false;
         }
     }
     for(int i = 0; i < 4; ++i){
-        if(str_to_int(ip_parts[i]) > 255) return false;
+        if(stoi(ip_parts[i]) > 255) return false;
     }
     return true;
 }
+
+/*
+ 
+//-----------------------------string processing------------------------------------//
+
+
 
 //----------------------------------logger------------------------------------------//
 void log_ERROR(string cmd) {
@@ -359,44 +361,28 @@ void serverEnd(string server_port){
 
                 //键盘输入
                 if(STDIN == i){
+                    memset(&charmsg[0], 0, sizeof(charmsg));
                     n = read(STDIN,charmsg,sizeof(charmsg));
                     fflush(STDIN);
                     string msg ;
-//                    msg = charmsg.c_str();
+                    msg = charmsg;
+                    
+//                    msg = msg.substr(0, msg.length() - 1); 不确定EoF是否需要删除
 //                    for(i = 0;i<n;i++)
 //                        charmsg[i] = toupper(charmsg[i]);
 //                    printf("%s",charmsg);
 //                    int choice;
-//                    if(msg_p[0] == "LIST"){choice = 1;}
-//                    if(msg_p[0] == "STATISTICS"){choice = 2;}
-//                    if(msg_p[0] == "IP"){choice = 3;}
-//                    if(msg_p[0] == "AUTHOR"){choice = 4;}
-//                    if(msg_p[0] == "PORT"){choice = 5;}
-//                    if(msg_p[0] == "BLOCKED"){choice = 6;}
-//                    switch(choice){
-//                        case 1:{
-//                            log_LIST();
-//                            break;
-//                        }
-//                        case 2:{
-//                            log_STATISTICS();
-//                            break;
-//                        }
-//                        case 3:{log_IP();
-//                            break;
-//                        }
-//                        case 4:{log_AUTHOR();
-//                            break;
-//                        }
-//                        case 5:{log_PORT();
-//                            break;
-//                        }
-//                        case 6:{log_BLOCKED(msg_p[1]);
-//                            break;
-//                        }
-//
-//                    }
-
+                    split_msg(msg,' ',msg_p);
+                    for (int i = 0; i<msg_p.size();i++){
+                        cout<< i << endl;
+                    }
+                    
+//                    if(msg_p[0] == "LIST"){log_LIST();break;}
+//                    if(msg_p[0] == "STATISTICS"){log_STATISTICS();break;}
+//                    if(msg_p[0] == "IP"){log_IP();break;}
+//                    if(msg_p[0] == "AUTHOR"){log_AUTHOR();break;}
+//                    if(msg_p[0] == "PORT"){log_PORT();break;}
+//                    if(msg_p[0] == "BLOCKED"){log_BLOCKED(msg_p[1]);break;}
 
                 }
 
