@@ -160,6 +160,10 @@ void log_ERROR(string cmd) {
     cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
+void log_SUCCESS(string cmd) {
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+}
 void log_IP(){
     const char* command = "IP";
     cse4589_print_and_log("[%s:SUCCESS]\n", command);
@@ -251,6 +255,10 @@ void clientEnd(char *port){
     FD_SET(0, &masterfds);
     fdmax = 0;
     
+    // my server/ex-server info
+    string myServerIP;
+    string myServerPORT;
+
     // save received message
     char message[BUFSIZ];
     string msg;
@@ -260,7 +268,7 @@ void clientEnd(char *port){
     initMyAddr(port);
     
     // main loop handling instructions
-    // while(true){
+    while(true){
         // copy fds
         readfds = masterfds;
 
@@ -272,38 +280,90 @@ void clientEnd(char *port){
             // if not loged in, listen to "stdio", for instructions
             select(fdmax+1, &readfds, NULL, NULL, NULL);
 
-            // two cases: 1) has new instruction 2) no instruction
-            if(FD_ISSET(0, &readfds)){
-                // 1) has new instruction
-                recv(0, message, BUFSIZ, 0);
-                msg = message; // 这里到底有没有特殊符号？到底要不要截取？
-                split_msg(msg, ' ', msg_vec);
-                fflush(0); // 这里不flush的话，会有bug吗？
-                
-                // for different instructions
-                if(msg_vec[0] == "AUTHOR"){
-                    log_AUTHOR();
-                }
-                if(msg_vec[0] == "IP"){
-                    log_IP();
-                }
-                if(msg_vec[0] == "PORT"){
-                    log_PORT;
-                }
-                if(msg_vec[0] == "EXIT"){
-                    send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
-                    log_EXIT();
-                }
-                if(msg_vec[0] == "LOGIN"){
-
-                }
-            }else{
-                // 2) no instructions, continue to listening
+            // two cases: 1) has no instruction 2) has new instruction
+            // 1) no instructions, continue to listening
+            if(FD_ISSET(0, &readfds) == 0){
                 continue;
             }
-            cout << "Please Login First!" << endl;
+
+            // 2) has new instruction
+            recv(0, message, BUFSIZ, 0);
+            msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+            split_msg(msg, ' ', msg_vec);
+            fflush(0); // 这里不flush的话，会有bug吗？
+            
+            // for different instructions
+            if(msg_vec[0] == "AUTHOR"){
+                log_AUTHOR();
+            }else if(msg_vec[0] == "IP"){
+                log_IP();
+            }else if(msg_vec[0] == "PORT"){
+                log_PORT;
+            }else if(msg_vec[0] == "EXIT"){
+                send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
+                log_EXIT();
+            }else if(msg_vec[0] == "LOGIN"){
+                // if ip is not valid, skip other operations
+                if(!valid_ip(msg_vec[1])){
+                    log_ERROR(msg_vec[0]);
+                    continue;
+                }
+                
+                // if ip is valid, try to connect to server
+                //      1) if it is the first time, will need to connect
+                //      2) if has connected to the same server, skip
+                //      3) if has connected to a different server, need to re-connect
+                if(myServerIP != msg_vec[1] || myServerPORT != msg_vec[2]){
+                    myServerIP = msg_vec[1];
+                    myServerPORT = msg_vec[2];
+
+                    // server addrinfo
+                    struct addrinfo *serverInfo, *p;
+
+                    // if can't reach server, continue
+                    if(getaddrinfo(myServerIP, myServerPORT, &hints, &serverInfo) != 0){
+                        myServerIP = "";
+                        myServerPORT = "";
+                        freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                        log_ERROR(msg_vec[0]);
+                        continue;
+                    }
+
+                    // try to connect to server
+                    for(p = serverInfo; p != null; p = p->ai_next){
+                        if(connect(sockfd, p->ai_addr, p->ai_addrlen) == 0){
+                            break;
+                        }else{
+                            close(sockfd);
+                        }
+                    }
+
+                    // no successful connection, continue
+                    if(p == NULL){
+                        myServerIP = "";
+                        myServerPORT = "";
+                        freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                        log_ERROR(msg_vec[0]);
+                        continue;
+                    }
+                    
+                    // if connected successfully
+                    freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                }
+
+                // if connected, start to login
+                msg = "LOGIN " + myHostname + " " + myIP + " " + myPORT;
+                send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                loged_in = true;
+                log_SUCCESS(msg_vec[0]);
+                
+                // loged in, but receive new messages at here???
+                //    or do it in new loop???
+                //
+                // do REFRESH as a single function, and use it here?
+            }
         }
-    // }
+    }
 }
 
 
