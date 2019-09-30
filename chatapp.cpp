@@ -286,7 +286,7 @@ void clientEnd(char *port){
     // client socket
     FD_ZERO(&masterfds);
     FD_SET(0, &masterfds);
-    fdmax = 0;
+    fdmax = 2;
     
     // my server/ex-server info
     string myServerIP;
@@ -315,7 +315,7 @@ void clientEnd(char *port){
             
             if(FD_ISSET(0, &readfds)){
                 memset(message, 0, sizeof(message));
-                recv(0, message, sizeof(message), 0);
+                read(STDIN,message,sizeof(message));
                 msg = message;
            	    msg = msg.substr(0, msg.length() - 1);
                 fflush(0); // 这里不flush的话，会有bug吗？
@@ -327,7 +327,7 @@ void clientEnd(char *port){
                 }else if(msg_vec[0] == "IP"){
                     log_IP();
                 }else if(msg_vec[0] == "PORT"){
-                    log_PORT;
+                    log_PORT();
                 }else if(msg_vec[0] == "LOGOUT"){
                     msg = "LOGOUT " + myIP;
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
@@ -419,7 +419,7 @@ void clientEnd(char *port){
                 }
 
                 msg = message;
-                split_msg(msg, " ", msg_vec);
+                split_msg(msg, ' ', msg_vec);
                 if(msg_vec[0] == "REFRESH"){
                     socketlist.clear();
                     for(int j = 1; j < (msg_vec.size() - 1); j += 3){
@@ -450,22 +450,23 @@ void clientEnd(char *port){
             if(FD_ISSET(0, &readfds) == 0){
                 continue;
             }
-
             // 2) has new instruction
             memset(message, 0, sizeof(message));
-            recv(0, message, sizeof(message), 0);
+            read(STDIN,message,sizeof(message));
+            cout << message << endl;
             msg = message;
+
            	msg = msg.substr(0, msg.length() - 1);
+
             fflush(0); // 这里不flush的话，会有bug吗？
             split_msg(msg, ' ', msg_vec);
-            
             // for different instructions
             if(msg_vec[0] == "AUTHOR"){
                 log_AUTHOR();
             }else if(msg_vec[0] == "IP"){
                 log_IP();
             }else if(msg_vec[0] == "PORT"){
-                log_PORT;
+                log_PORT();
             }else if(msg_vec[0] == "EXIT"){
                 send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
                 log_EXIT();
@@ -489,7 +490,7 @@ void clientEnd(char *port){
                     struct addrinfo *serverInfo, *p;
 
                     // if can't reach server, log_ERROR & continue
-                    if(getaddrinfo(myServerIP, myServerPORT, &hints, &serverInfo) != 0){
+                    if(getaddrinfo(myServerIP.c_str(), myServerPORT.c_str(), &hints, &serverInfo) != 0){
                         myServerIP = "";
                         myServerPORT = "";
                         freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
@@ -498,7 +499,7 @@ void clientEnd(char *port){
                     }
 
                     // try to connect to server
-                    for(p = serverInfo; p != null; p = p->ai_next){
+                    for(p = serverInfo; p != NULL; p = p->ai_next){
                         if(connect(sockfd, p->ai_addr, p->ai_addrlen) == 0){
                             break;
                         }else{
@@ -535,7 +536,7 @@ void clientEnd(char *port){
 
                 // check & handle each message
                 for(int i = 0; i < msg_buf.size(); i++){
-                    split_msg(msg_buf[i], " ", msg_vec);
+                    split_msg(msg_buf[i], ' ', msg_vec);
                     if(msg_vec[0] == "REFRESH"){
                         socketlist.clear();
                         for(int j = 1; j < (msg_vec.size() - 1); j += 3){
@@ -671,8 +672,6 @@ void serverEnd(string server_port){
                         close(fdtemp);
                         continue;
                     }
-                    printf("Client sent me buf:%s\n", msg.c_str());
-                    printf("Echoing it backt to the remote host ...");
                     msg = charmsg;
                     split_msg(msg,' ',msg_p);
                     
