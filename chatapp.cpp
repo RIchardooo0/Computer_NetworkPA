@@ -110,7 +110,7 @@ void initMyAddr(const char* port){
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-	  hints.ai_flags = AI_PASSIVE;      
+	hints.ai_flags = AI_PASSIVE;
 
     getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
@@ -148,12 +148,6 @@ bool valid_ip(string ip_test) {
     }
     return true;
 }
-
-/*
- 
-//-----------------------------string processing------------------------------------//
-
-
 
 //----------------------------------logger------------------------------------------//
 void log_ERROR(string cmd) {
@@ -240,8 +234,6 @@ void log_EXIT(){
     cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
     cse4589_print_and_log("[%s:END]\n", "EXIT");
 }
-//###############################################################
-*/
 
 
 //----------------------------------clientEnd---------------------------------------//
@@ -262,6 +254,7 @@ void clientEnd(char *port){
     // save received message
     char message[BUFSIZ];
     string msg;
+    vector<string> msg_buf;
     vector<string> msg_vec;
 
     // initialization
@@ -277,7 +270,7 @@ void clientEnd(char *port){
             // if already loged in
             cout << "Handle Loged In!" << endl;
         }else{
-            // if not loged in, listen to "stdio", for instructions
+            // if not loged in, listen to "stdin", for instructions
             select(fdmax+1, &readfds, NULL, NULL, NULL);
 
             // two cases: 1) has no instruction 2) has new instruction
@@ -287,7 +280,8 @@ void clientEnd(char *port){
             }
 
             // 2) has new instruction
-            recv(0, message, BUFSIZ, 0);
+            memset(message, 0, sizeof(message));
+            recv(0, message, sizeof(message), 0);
             msg = message; // 这里到底有没有特殊符号？到底要不要截取？
             split_msg(msg, ' ', msg_vec);
             fflush(0); // 这里不flush的话，会有bug吗？
@@ -320,7 +314,7 @@ void clientEnd(char *port){
                     // server addrinfo
                     struct addrinfo *serverInfo, *p;
 
-                    // if can't reach server, continue
+                    // if can't reach server, log_ERROR & continue
                     if(getaddrinfo(myServerIP, myServerPORT, &hints, &serverInfo) != 0){
                         myServerIP = "";
                         myServerPORT = "";
@@ -338,7 +332,7 @@ void clientEnd(char *port){
                         }
                     }
 
-                    // no successful connection, continue
+                    // no successful connection, log_ERROR & continue
                     if(p == NULL){
                         myServerIP = "";
                         myServerPORT = "";
@@ -355,12 +349,43 @@ void clientEnd(char *port){
                 msg = "LOGIN " + myHostname + " " + myIP + " " + myPORT;
                 send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                 loged_in = true;
-                log_SUCCESS(msg_vec[0]);
+
+                // REFRESH client/socket list
+                // if has messages in buffer, handle them
+                memset(message, 0, sizeof(message));
                 
-                // loged in, but receive new messages at here???
-                //    or do it in new loop???
-                //
-                // do REFRESH as a single function, and use it here?
+                // split each line of message, save in msg_buf
+                recv(sockfd, message, sizeof(message), 0);
+                msg = message;
+                split_msg(msg, '\n', msg_buf);
+
+                // check & handle each message
+                for(int i = 0; i < msg_buf.size(); i++){
+                    split_msg(msg_buf[i], " ", msg_vec);
+                    if(msg_vec[0] == "REFRESH"){
+                        socketlist.clear();
+                        for(int j = 1; j < (msg_vec.size() - 1); j += 3){
+                            if(InSetSocket(msg_vec[j+1], msg_vec[j+2]) == NULL){
+                                socketlist.push_back(*newSocketObject(-2, msg_vec[j], msg_vec[j+1], msg_vec[j+2]));
+                            }
+                        }
+                    }else if(msg_vec[0] == "SEND"){
+                        msg = msg_vec[3];
+                        for(int j = 4; j < msg_vec.size(); j++){
+                            msg += " " + msg_vec[j];
+                        }
+                        log_EVENT(msg_vec[1], msg);
+                    }else if(msg_vec[0] == "BROADCAST"){
+                        msg = msg_vec[2];
+                        for(int j = 3; j < msg_vec.size(); j++){
+                            msg += " " + msg_vec[j];
+                        }
+                        log_EVENT(msg_vec[1], msg);
+                    }
+                }
+
+                // login success message
+                log_SUCCESS("LOGIN");
             }
         }
     }
