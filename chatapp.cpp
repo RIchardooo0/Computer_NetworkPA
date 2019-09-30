@@ -153,15 +153,13 @@ bool valid_ip(string ip_test) {
     return true;
 }
 
-/*
- 
-//-----------------------------string processing------------------------------------//
-
-
-
 //----------------------------------logger------------------------------------------//
 void log_ERROR(string cmd) {
     cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+}
+void log_SUCCESS(string cmd) {
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
 void log_IP(){
@@ -240,8 +238,6 @@ void log_EXIT(){
     cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
     cse4589_print_and_log("[%s:END]\n", "EXIT");
 }
-//###############################################################
-*/
 
 
 //----------------------------------clientEnd---------------------------------------//
@@ -255,16 +251,21 @@ void clientEnd(char *port){
     FD_SET(0, &masterfds);
     fdmax = 0;
     
+    // my server/ex-server info
+    string myServerIP;
+    string myServerPORT;
+
     // save received message
     char message[BUFSIZ];
     string msg;
+    vector<string> msg_buf;
     vector<string> msg_vec;
 
     // initialization
     initMyAddr(port);
     
     // main loop handling instructions
-    // while(true){
+    while(true){
         // copy fds
         readfds = masterfds;
 
@@ -273,41 +274,125 @@ void clientEnd(char *port){
             // if already loged in
             cout << "Handle Loged In!" << endl;
         }else{
-            // if not loged in, listen to "stdio", for instructions
+            // if not loged in, listen to "stdin", for instructions
             select(fdmax+1, &readfds, NULL, NULL, NULL);
 
-            // two cases: 1) has new instruction 2) no instruction
-            if(FD_ISSET(0, &readfds)){
-                // 1) has new instruction
-                recv(0, message, BUFSIZ, 0);
-                msg = message; // 这里到底有没有特殊符号？到底要不要截取？
-                split_msg(msg, ' ', msg_vec);
-                fflush(0); // 这里不flush的话，会有bug吗？
-                
-                // for different instructions
-                if(msg_vec[0] == "AUTHOR"){
-                    log_AUTHOR();
-                }
-                if(msg_vec[0] == "IP"){
-                    log_IP();
-                }
-                if(msg_vec[0] == "PORT"){
-                    log_PORT;
-                }
-                if(msg_vec[0] == "EXIT"){
-                    send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
-                    log_EXIT();
-                }
-                if(msg_vec[0] == "LOGIN"){
-
-                }
-            }else{
-                // 2) no instructions, continue to listening
+            // two cases: 1) has no instruction 2) has new instruction
+            // 1) no instructions, continue to listening
+            if(FD_ISSET(0, &readfds) == 0){
                 continue;
             }
-            cout << "Please Login First!" << endl;
+
+            // 2) has new instruction
+            memset(message, 0, sizeof(message));
+            recv(0, message, sizeof(message), 0);
+            msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+            split_msg(msg, ' ', msg_vec);
+            fflush(0); // 这里不flush的话，会有bug吗？
+            
+            // for different instructions
+            if(msg_vec[0] == "AUTHOR"){
+                log_AUTHOR();
+            }else if(msg_vec[0] == "IP"){
+                log_IP();
+            }else if(msg_vec[0] == "PORT"){
+                log_PORT;
+            }else if(msg_vec[0] == "EXIT"){
+                send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
+                log_EXIT();
+            }else if(msg_vec[0] == "LOGIN"){
+                // if ip is not valid, skip other operations
+                if(!valid_ip(msg_vec[1])){
+                    log_ERROR(msg_vec[0]);
+                    continue;
+                }
+                
+                // if ip is valid, try to connect to server
+                //      1) if it is the first time, will need to connect
+                //      2) if has connected to the same server, skip
+                //      3) if has connected to a different server, need to re-connect
+                if(myServerIP != msg_vec[1] || myServerPORT != msg_vec[2]){
+                    myServerIP = msg_vec[1];
+                    myServerPORT = msg_vec[2];
+
+                    // server addrinfo
+                    struct addrinfo *serverInfo, *p;
+
+                    // if can't reach server, log_ERROR & continue
+                    if(getaddrinfo(myServerIP, myServerPORT, &hints, &serverInfo) != 0){
+                        myServerIP = "";
+                        myServerPORT = "";
+                        freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                        log_ERROR(msg_vec[0]);
+                        continue;
+                    }
+
+                    // try to connect to server
+                    for(p = serverInfo; p != null; p = p->ai_next){
+                        if(connect(sockfd, p->ai_addr, p->ai_addrlen) == 0){
+                            break;
+                        }else{
+                            close(sockfd);
+                        }
+                    }
+
+                    // no successful connection, log_ERROR & continue
+                    if(p == NULL){
+                        myServerIP = "";
+                        myServerPORT = "";
+                        freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                        log_ERROR(msg_vec[0]);
+                        continue;
+                    }
+                    
+                    // if connected successfully
+                    freeaddrinfo(serverInfo);   // 这里多添加了几次，在各种情况下都free
+                }
+
+                // if connected, start to login
+                msg = "LOGIN " + myHostname + " " + myIP + " " + myPORT;
+                send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                loged_in = true;
+
+                // REFRESH client/socket list
+                // if has messages in buffer, handle them
+                memset(message, 0, sizeof(message));
+                
+                // split each line of message, save in msg_buf
+                recv(sockfd, message, sizeof(message), 0);
+                msg = message;
+                split_msg(msg, '\n', msg_buf);
+
+                // check & handle each message
+                for(int i = 0; i < msg_buf.size(); i++){
+                    split_msg(msg_buf[i], " ", msg_vec);
+                    if(msg_vec[0] == "REFRESH"){
+                        socketlist.clear();
+                        for(int j = 1; j < (msg_vec.size() - 1); j += 3){
+                            if(InSetSocket(msg_vec[j+1], msg_vec[j+2]) == NULL){
+                                socketlist.push_back(*newSocketObject(-2, msg_vec[j], msg_vec[j+1], msg_vec[j+2]));
+                            }
+                        }
+                    }else if(msg_vec[0] == "SEND"){
+                        msg = msg_vec[3];
+                        for(int j = 4; j < msg_vec.size(); j++){
+                            msg += " " + msg_vec[j];
+                        }
+                        log_EVENT(msg_vec[1], msg);
+                    }else if(msg_vec[0] == "BROADCAST"){
+                        msg = msg_vec[2];
+                        for(int j = 3; j < msg_vec.size(); j++){
+                            msg += " " + msg_vec[j];
+                        }
+                        log_EVENT(msg_vec[1], msg);
+                    }
+                }
+
+                // login success message
+                log_SUCCESS("LOGIN");
+            }
         }
-    // }
+    }
 }
 
 
