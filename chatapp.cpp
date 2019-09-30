@@ -23,7 +23,6 @@ fd_set masterfds;
 fd_set readfds;
 int fdmax;
 
-/*
 //------------------------------data structure-------------------------------------//
 
 struct SocketObject{
@@ -85,7 +84,7 @@ SocketObject* InSetSocket(int cfd) {
     }
     return NULL;
 }
-*/
+
 
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
@@ -110,13 +109,18 @@ void initMyAddr(const char* port){
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-	  hints.ai_flags = AI_PASSIVE;      
+    hints.ai_flags = AI_PASSIVE;
 
     getaddrinfo(NULL, myPort.c_str(), &hints, &myAddrInfo);
     sockfd = socket(myAddrInfo->ai_family, myAddrInfo->ai_socktype, myAddrInfo->ai_protocol);
-    bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen);
-    
+    if(bind(sockfd, myAddrInfo->ai_addr, myAddrInfo->ai_addrlen)<0){
+        perror("Bind failed");
+    }else{
+        cout<< "Bind successful!"<<endl;
+    }
+
     freeaddrinfo(myAddrInfo);
+    
 }
 
 // string splitor to get message instructions
@@ -330,12 +334,13 @@ void serverEnd(string server_port){
     socklen_t len;
     int bytes = 0;
     int maxfd;
-    int i,n;
+    int fdtemp,n;
     char buf[BUFSIZ],str;
     len = sizeof(struct sockaddr_in);
     const char* charPort = server_port.c_str();
     //对准备maintain的struct初始化
     initMyAddr(charPort);
+    printf("My ip address is : %s\n",myIP.c_str());
     listen(sockfd,BACKLOG);
     listenfd = sockfd;
 
@@ -346,7 +351,7 @@ void serverEnd(string server_port){
     maxfd = listenfd;
     
     while(1){
-        fflush(stdout);
+//        fflush(stdout);
         current_rdfs = global_rdfs;
         if(select(maxfd+1, &current_rdfs,NULL,NULL,NULL)<0){
             perror("select error.\n");
@@ -356,25 +361,21 @@ void serverEnd(string server_port){
             exit(-1);
         }
 
-        for(i = 0;i <= maxfd; i++){
-            if(FD_ISSET(i,&current_rdfs)){
+        for(fdtemp = 0; fdtemp<= maxfd; fdtemp++){
+            if(FD_ISSET(fdtemp,&current_rdfs)){
 
                 //键盘输入
-                if(STDIN == i){
+                if(STDIN == fdtemp){
                     memset(&charmsg[0], 0, sizeof(charmsg));
                     n = read(STDIN,charmsg,sizeof(charmsg));
                     fflush(STDIN);
                     string msg ;
                     msg = charmsg;
-                    
 //                    msg = msg.substr(0, msg.length() - 1); 不确定EoF是否需要删除
-//                    for(i = 0;i<n;i++)
-//                        charmsg[i] = toupper(charmsg[i]);
-//                    printf("%s",charmsg);
-//                    int choice;
+
                     split_msg(msg,' ',msg_p);
                     for (int i = 0; i<msg_p.size();i++){
-                        cout<< i << endl;
+                        cout<< msg_p[i] << endl;
                     }
                     
 //                    if(msg_p[0] == "LIST"){log_LIST();break;}
@@ -387,7 +388,8 @@ void serverEnd(string server_port){
                 }
 
                 //创造连接
-                else if(listenfd == i){
+                else if(listenfd == fdtemp){
+                    cout<< "entered"<<endl;
                     if((connfd = accept(listenfd, (struct sockaddr*)&client_addr,(socklen_t*)&len))<0){
                         perror("accept error.\n");
                         exit(-1);
@@ -395,27 +397,16 @@ void serverEnd(string server_port){
                     printf("receive from %s at Port %d\n",inet_ntop(AF_INET,&client_addr.sin_addr,&str, sizeof(str)),ntohs(client_addr.sin_port));
                     
                     
-                    FD_CLR(i, &current_rdfs);
+                    FD_CLR(fdtemp, &current_rdfs);
                     maxfd = maxfd >connfd? maxfd:connfd;
                     FD_SET(connfd,&global_rdfs);
-                    recv(connfd, charmsg, sizeof(charmsg),0);
-                    msg = charmsg;
-//                    split_msg(msg," ",msg_p);
                     
-//                    switch(str_to_int(msg_p[0])){
-//                        case 1:{
-//
-//                        }
-//                        case 2:{
-//
-//                        }
-//                    }
                     
                 }
                 //信息交流
                 else{
                     /*initialize buffer to receive message*/
-                    bytes = recv(i, buf, BUFSIZ, 0 );
+                    bytes = recv(fdtemp, charmsg, sizeof(charmsg), 0 );
                     if(bytes<0){
                         perror("recv error.\n");
                         exit(-1);
@@ -425,8 +416,207 @@ void serverEnd(string server_port){
                         close(i);
                         continue;
                     }
-                    printf("Client sent me buf:%s\n", buf);
+                    printf("Client sent me buf:%s\n", msg);
                     printf("Echoing it backt to the remote host ...");
+                    msg = charmsg;
+                    split_msg(msg," ",msg_p);
+                    
+                    if(msg_p[0] == "LOGIN"){
+                        string host = msg_p[1];
+                        string host_ip = msg_p[2];
+                        string port = msg_p[3];
+                        SocketObject *hd = InSetSocket(fdtemp);
+                        
+                        if (hd == NULL)
+                        {
+                            hd = newSocketObject(fdtemp, host, host_ip, port);
+                            socketlist.push_back(*hd);
+                        }
+                        else
+                        {
+                            hd->status = "logged-in";
+                            if (!hd->msgbuffer.empty())
+                            {
+                                for (vector<string>::iterator it = hd->msgbuffer.begin(); it < hd->msgbuffer.end(); it++)
+                                {
+                                    string mgs = *it;
+                                    send(hd->cfd, (const char *)mgs.c_str(), mgs.length(), 0);
+                                }
+                                hd->msgbuffer.clear();
+                            }
+                        }
+                        string message = "REFRESH";
+                        for (unsigned int i = 0; i < socketlist.size(); ++i)
+                        {
+                            if (socketlist[i].status == "logged-in")
+                            {
+                                message = message + blank + socketlist[i].hostname + blank + socketlist[i].ip + blank + socketlist[i].port;
+                            }
+                        }
+                        
+                        send(fdtemp, message.c_str(), strlen(message.c_str()), 0);
+                        break;}
+                    
+                    if(msg_p[0] == "LOGOUT"){
+                        string ip_addr = msg_p[1];
+                        SocketObject *hd = InSetSocket(ip_addr);
+                        if (hd != NULL)
+                        {
+                            hd->status = "logged-out";
+                        }
+                        break;}
+                    
+                    
+                    if(msg_p[0] == "EXIT"){
+                        for (int i = 0; i < socketlist.size(); ++i)
+                        {
+                            if (socketlist[i].cfd == fdtemp)
+                            {
+                                socketlist.erase(socketlist.begin() + i--);
+                            }
+                        }
+                        break;}
+                    
+                    if(msg_p[0] == "REFRESH"){
+                        string message = "REFRESH";
+                        for (unsigned int i = 0; i < socketlist.size(); ++i)
+                        {
+                            if (socketlist[i].status == "logged-in")
+                            {
+                                message += blank + socketlist[i].hostname + blank + socketlist[i].ip + blank +
+                                socketlist[i].port;
+                            }
+                        }
+                        send(fdtemp, message.c_str(), strlen(message.c_str()), 0);
+                        break;}
+                    
+                    if(msg_p[0] == "BROADCAST"){
+                        string from_ip = msg_p[1];
+                        SocketObject *hd2 = InSetSocket(from_ip);
+                        if (hd2 == NULL)
+                        {
+                            break;
+                        }
+                        string con = "255.255.255.255";
+                        
+                        for (int i = 0; i < socketlist.size(); ++i)
+                        {
+                            if (socketlist[i].ip == from_ip)
+                            {
+                                continue;
+                            }
+                            vector<string>::iterator ret;
+                            ret = find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip);
+                            if (ret == socketlist[i].blockeduser.end())
+                            {
+                                if (socketlist[i].status == "logged-in")
+                                {
+                                    send(socketlist[i].cfd, (const char *)msg.c_str(), msg.length(), 0);
+                                    socketlist[i].num_msg_rcv = socketlist[i].num_msg_rcv + 1;
+                                    hd2->num_msg_sent = hd2->num_msg_sent + 1;
+                                    string message;
+                                    message = msg_p[2];
+                                    for (int m = 3; m < msg_p.size(); m++)
+                                    {
+                                        message = message + blank + msg_p[m];
+                                    }
+                                    
+                                    log_EVENTS(from_ip, message, con);
+                                }
+                            }
+                        }
+                        break;}
+                    
+                    if(msg_p[0] == "BLOCK"){
+                        string from_ip = msg_p[1];
+                        string to_ip = msg_p[2];
+                        SocketObject *hd = InSetSocket(from_ip);
+                        if (!valid_ip(to_ip) || InSetSocket(to_ip) == NULL)
+                        {
+                            log_Error("BLOCK");
+                        }
+                        vector<string>::iterator ret;
+                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip);
+                        if (ret == hd->blockeduser.end())
+                        {
+                            hd->blockeduser.push_back(to_ip);
+                        }
+                        else
+                        {
+                            log_Error("BLOCK");
+                        }
+                        break;}
+                    
+                    if(msg_p[0] == "UNBLOCK"){
+                        string from_ip = msg_p[1];
+                        string to_ip = msg_p[2];
+                        SocketObject *hd = InSetSocket(from_ip);
+                        if (!valid_ip(to_ip) || InSetSocket(to_ip) == NULL)
+                        {
+                            log_Error("UNBLOCK");
+                        }
+                        vector<string>::iterator ret;
+                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip);
+                        if (ret == hd->blockeduser.end())
+                        {
+                            log_Error("UNBLOCK");
+                        }
+                        else
+                        {
+                            hd->blockeduser.erase(ret);
+                        }
+                        break;}
+                    
+                    if(msg_p[0] == "SEND"){
+                        string from_ip = msg_p[1];
+                        string to_ip = msg_p[2];
+                        //cout<< msg;
+                        SocketObject *hd = InSetSocket(to_ip);
+                        SocketObject *hd2 = InSetSocket(from_ip);
+                        
+                        if (hd == NULL)
+                        {
+                            break;
+                        }
+                        vector<string>::iterator ret;
+                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), from_ip);
+                        if (ret == hd->blockeduser.end())
+                        {
+                            if (hd->status == "logged-in")
+                            {
+                                //cout<< msg;
+                                send(hd->cfd, (const char *)msg.c_str(), msg.length(), 0);//
+                                hd->num_msg_rcv = hd->num_msg_rcv + 1;
+                                hd2->num_msg_sent = hd2->num_msg_sent + 1;
+                                string message;
+                                message = msg_p[3];
+                                for (int m = 4; m < msg_p.size(); m++)
+                                {
+                                    message = message + blank + msg_p[m];
+                                }
+                                log_EVENTS(from_ip, message, to_ip);
+                            }
+                            else
+                            {
+                                hd->msgbuffer.push_back(msg);
+                                hd->num_msg_rcv = hd->num_msg_rcv + 1;
+                                hd2->num_msg_sent = hd2->num_msg_sent + 1;
+                                string message;
+                                message = msg_p[3];
+                                for (int m = 4; m < msg_p.size(); m++)
+                                {
+                                    message = message + blank + msg_p[m];
+                                }
+                                log_EVENTS(from_ip, message, to_ip);
+                            }
+                            break;
+                        }
+                    }
+                    
+                    
+                    
+                    
+                    
                     if(send(i, buf, strlen(buf),0) == strlen(buf)){
                         cout<<"done!\n"<<endl;
                     }
