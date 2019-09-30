@@ -272,7 +272,140 @@ void clientEnd(char *port){
         // two cases: loged in or not
         if(loged_in){
             // if already loged in
-            cout << "Handle Loged In!" << endl;
+            FD_SET(sockfd, &readfds);
+            fdmax = sockfd;
+            select(fdmax+1, &readfds, NULL, NULL, NULL);
+            
+            if(FD_ISSET(0, &readfds)){
+                memset(message, 0, sizeof(message));
+                recv(0, message, sizeof(message), 0);
+                msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+                fflush(0); // 这里不flush的话，会有bug吗？
+                split_msg(msg, ' ', msg_vec);
+
+                // for different instructions
+                if(msg_vec[0] == "AUTHOR"){
+                    log_AUTHOR();
+                }else if(msg_vec[0] == "IP"){
+                    log_IP();
+                }else if(msg_vec[0] == "PORT"){
+                    log_PORT;
+                }else if(msg_vec[0] == "LOGOUT"){
+                    msg = "LOGOUT " + myIP;
+                    send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                    loged_in = false;
+                    log_SUCCESS("LOGOUT");
+                }else if(msg_vec[0] == "EXIT"){
+                    send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
+                    log_EXIT();
+                    exit(0);
+                }else if(msg_vec[0] == "REFRESH"){
+                    send(sockfd, (const char*)("REFRESH " + myIP).c_str(), msg.length(), 0); 
+                    log_SUCCESS("REFRESH");
+                }else if(msg_vec[0] == "LIST"){
+                    log_LIST();
+                }else if(msg_vec[0] == "BLOCK"){
+                    // if block user not valid or not in the list
+                    if (!valid_ip(msg_vec[1]) || InSetSocket(msg_vec[1]) == NULL)
+                    {
+                        log_ERROR("BLOCK");
+                        continue;
+                    }
+
+                    SocketObject *hd = InSetSocket(myIP);
+                    if (hd == NULL)
+                    {
+                        msg = "BLOCK " + myIP + " " + msg_vec[1];
+                        send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                        log_SUCCESS("BLOCK");
+                        continue;
+                    }
+                    vector<string>::iterator ret;
+                    ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
+                    if (ret != hd->blockeduser.end())
+                    {
+                        continue;
+                    }
+                    hd->blockeduser.push_back(msg_vec[1]);
+                    msg = "BLOCK " + myIP + " " + msg_vec[1];
+                    send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                    log_SUCCESS("BLOCK");
+                }else if(msg_vec[0] == "UNBLOCK"){
+					if (InSetSocket(msg_vec[1]) == NULL)
+					{
+                        log_ERROR("UNBLOCK");
+                        continue;
+					}
+					SocketObject *hd = InSetSocket(sockfd);
+					if (hd == NULL)
+					{
+						msg = "UNBLOCK " + myIP + " " + msg_vec[1];
+						send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+						log_SUCCESS("UNBLOCK");
+					}else{
+						vector<string>::iterator ret;
+						ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
+						if (ret == hd->blockeduser.end())
+						{
+							continue;
+						}
+						msg = "UNBLOCK " + myIP + " " + msg_vec[1];
+						send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+						log_SUCCESS("UNBLOCK");
+					}
+                }else if(msg_vec[0] == "SEND"){
+                    if(!valid_ip(msg_vec[1]) || InSetSocket(msg_vec[1]) == NULL){
+                        log_ERROR("SEND");
+                        continue;
+                    }
+                    msg = "SEND " + myIP + " " + msg_vec[1];
+                    for(int i = 2; i < msg_vec.size(); i++){
+                        msg += " " + msg_vec[i];
+                    }
+                    send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                    log_SUCCESS("SEND");
+                }else if(msg_vec[0] == "BROADCAST"){
+                    msg = "BROADCAST " + myIP;
+                    for(int i = 1; i < msg_vec.size(); i++){
+                        msg += " " + msg_vec[i];
+                    }
+                    send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                    log_SUCCESS("BROADCAST");
+                }
+            }else if(FD_ISSET(sockfd, &readfds)){
+                // receive message from server
+                memset(message, 0, sizeof(message));
+                if(recv(sockfd, message, sizeof(message), 0) == 0){
+                    // this client is closed by server
+                    close(sockfd);
+                    fdmax = 0; // 这里跟狗蛋写的不一样
+                    loged_in = false;
+                    continue;
+                }
+
+                msg = message;
+                split_msg(msg, " ", msg_vec);
+                if(msg_vec[0] == "REFRESH"){
+                    socketlist.clear();
+                    for(int j = 1; j < (msg_vec.size() - 1); j += 3){
+                        if(InSetSocket(msg_vec[j+1], msg_vec[j+2]) == NULL){
+                            socketlist.push_back(*newSocketObject(-2, msg_vec[j], msg_vec[j+1], msg_vec[j+2]));
+                        }
+                    }
+                }else if(msg_vec[0] == "SEND"){
+                    msg = msg_vec[3];
+                    for(int j = 4; j < msg_vec.size(); j++){
+                        msg += " " + msg_vec[j];
+                    }
+                    log_EVENT(msg_vec[1], msg);
+                }else if(msg_vec[0] == "BROADCAST"){
+                    msg = msg_vec[2];
+                    for(int j = 3; j < msg_vec.size(); j++){
+                        msg += " " + msg_vec[j];
+                    }
+                    log_EVENT(msg_vec[1], msg);
+                }
+            }
         }else{
             // if not loged in, listen to "stdin", for instructions
             select(fdmax+1, &readfds, NULL, NULL, NULL);
@@ -287,8 +420,8 @@ void clientEnd(char *port){
             memset(message, 0, sizeof(message));
             recv(0, message, sizeof(message), 0);
             msg = message; // 这里到底有没有特殊符号？到底要不要截取？
-            split_msg(msg, ' ', msg_vec);
             fflush(0); // 这里不flush的话，会有bug吗？
+            split_msg(msg, ' ', msg_vec);
             
             // for different instructions
             if(msg_vec[0] == "AUTHOR"){
@@ -300,6 +433,7 @@ void clientEnd(char *port){
             }else if(msg_vec[0] == "EXIT"){
                 send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
                 log_EXIT();
+                exit(0);
             }else if(msg_vec[0] == "LOGIN"){
                 // if ip is not valid, skip other operations
                 if(!valid_ip(msg_vec[1])){
