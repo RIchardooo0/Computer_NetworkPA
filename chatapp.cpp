@@ -280,8 +280,6 @@ void log_EXIT(){
 //----------------------------------clientEnd---------------------------------------//
 
 void clientEnd(char *port){
-    cout << "client part entered!"<<endl;
-    /*
     // client status
     bool loged_in = false;
 
@@ -318,7 +316,8 @@ void clientEnd(char *port){
             if(FD_ISSET(0, &readfds)){
                 memset(message, 0, sizeof(message));
                 recv(0, message, sizeof(message), 0);
-                msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+                msg = message;
+           	    msg = msg.substr(0, msg.length() - 1);
                 fflush(0); // 这里不flush的话，会有bug吗？
                 split_msg(msg, ' ', msg_vec);
 
@@ -370,28 +369,25 @@ void clientEnd(char *port){
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                     log_SUCCESS("BLOCK");
                 }else if(msg_vec[0] == "UNBLOCK"){
-					if (InSetSocket(msg_vec[1]) == NULL)
-					{
+                    if (InSetSocket(msg_vec[1]) == NULL){
                         log_ERROR("UNBLOCK");
                         continue;
-					}
-					SocketObject *hd = InSetSocket(sockfd);
-					if (hd == NULL)
-					{
-						msg = "UNBLOCK " + myIP + " " + msg_vec[1];
-						send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-						log_SUCCESS("UNBLOCK");
-					}else{
-						vector<string>::iterator ret;
-						ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
-						if (ret == hd->blockeduser.end())
-						{
-							continue;
-						}
-						msg = "UNBLOCK " + myIP + " " + msg_vec[1];
-						send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-						log_SUCCESS("UNBLOCK");
-					}
+                    }
+                    SocketObject *hd = InSetSocket(sockfd);
+                    if (hd == NULL){
+                        msg = "UNBLOCK " + myIP + " " + msg_vec[1];
+                        send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                        log_SUCCESS("UNBLOCK");
+                    }else{
+                        vector<string>::iterator ret;
+                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
+                        if (ret == hd->blockeduser.end()){
+                            continue;
+                        }
+                        msg = "UNBLOCK " + myIP + " " + msg_vec[1];
+                        send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
+                        log_SUCCESS("UNBLOCK");
+                    }
                 }else if(msg_vec[0] == "SEND"){
                     if(!valid_ip(msg_vec[1]) || InSetSocket(msg_vec[1]) == NULL){
                         log_ERROR("SEND");
@@ -458,7 +454,8 @@ void clientEnd(char *port){
             // 2) has new instruction
             memset(message, 0, sizeof(message));
             recv(0, message, sizeof(message), 0);
-            msg = message; // 这里到底有没有特殊符号？到底要不要截取？
+            msg = message;
+           	msg = msg.substr(0, msg.length() - 1);
             fflush(0); // 这里不flush的话，会有bug吗？
             split_msg(msg, ' ', msg_vec);
             
@@ -566,7 +563,6 @@ void clientEnd(char *port){
             }
         }
     }
-     */
 }
 
 
