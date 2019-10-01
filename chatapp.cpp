@@ -1,4 +1,23 @@
-#include "header.h"
+#include <arpa/inet.h>
+#include <cstdio>
+#include <errno.h>
+#include <iostream>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <math.h>
+#include <algorithm>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <vector>
+
+#include "../include/global.h"
+#include "../include/logger.h"
 
 using namespace std;
 
@@ -7,15 +26,12 @@ using namespace std;
 #define RT_ERR -1
 #define BACKLOG 5
 
-void serverEnd(string server_port);
-void clientEnd(string client_port);
-
 //-----------------------------frequently used data---------------------------------//
 
 string myHostname;
 string myPort;
 string myIP;
-string blank = " ";
+string space = " ";
 int sockfd;
 struct addrinfo *myAddrInfo;
 struct addrinfo hints;
@@ -41,6 +57,7 @@ struct SocketObject{
         return atoi(port.c_str()) < atoi(rhs.port.c_str());
     }
 };
+
 vector<SocketObject> socketlist;
 
 SocketObject* newSocketObject(int cfd, string hostname, string ip, string port){
@@ -86,7 +103,6 @@ SocketObject* InSetSocket(int cfd) {
     return NULL;
 }
 
-
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
 void initMyAddr(const char* port){
@@ -121,7 +137,6 @@ void initMyAddr(const char* port){
     }
 
     freeaddrinfo(myAddrInfo);
-    
 }
 
 // string splitor to get message instructions
@@ -135,9 +150,6 @@ void split_msg(string &src, char spt, vector<string> &dest){
     }
 }
 
-
-// 我在服务器上试了下，c++有stoi()，能够直接用，不需要再写函数了
-
 bool valid_ip(string ip_test) {
     int num = count(ip_test.begin(),ip_test.end(),'.');
     if(num != 3) return false;
@@ -149,105 +161,73 @@ bool valid_ip(string ip_test) {
         }
     }
     for(int i = 0; i < 4; ++i){
-        if(stoi(ip_parts[i]) > 255) return false;
+        if(atoi(ip_parts[i].c_str()) > 255) return false;
     }
     return true;
 }
 
 //----------------------------------logger------------------------------------------//
 void log_ERROR(string cmd) {
-    printf("[%s:ERROR]\n", cmd.c_str());
-    printf("[%s:END]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
 void log_SUCCESS(string cmd) {
-    printf("[%s:SUCCESS]\n", cmd.c_str());
-    printf("[%s:END]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
 void log_IP(){
     const char* command = "IP";
-    printf("[%s:SUCCESS]\n", command);
-    printf("IP:%s\n",myIP.c_str());
-    printf("[%s:END]\n", command);
-
-    
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-//    cse4589_print_and_log("IP:%s\n", myIP.c_str());
-//    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("[%s:SUCCESS]\n", command);
+    cse4589_print_and_log("IP:%s\n", myIP.c_str());
+    cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_AUTHOR() {
     const char* command = "AUTHOR";
-    printf("[%s:SUCCESS]\n", command);
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command);
+    cse4589_print_and_log("[%s:SUCCESS]\n", command);
     string ubit_name_2 = "";
-    printf("I, %s, have read and understood the course academic integrity policy.\n", ubit_name_2.c_str());
-//    cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name_2.c_str());
-    printf("[%s:END]\n", command);
-//    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name_2.c_str());
+    cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_PORT() {
     const char* command = "PORT";
-    printf("[%s:SUCCESS]\n", command);
-    printf("PORT:%d\n",stoi(myPort));
-    printf("[%s:END]\n", command);
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-//    cse4589_print_and_log("PORT:%d\n", str_to_int(myPort));
-//    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("[%s:SUCCESS]\n", command);
+    cse4589_print_and_log("PORT:%d\n", atoi(myPort.c_str()));
+    cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_LIST() {
     string cmd = "LIST";
-    printf("[%s:SUCCESS]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     sort(socketlist.begin(), socketlist.end());
     for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        printf("%-5d%-35s%-20s%-8d\n", i + 1,
-               socketlist[i].hostname.c_str(),
-               socketlist[i].ip.c_str(), stoi(socketlist[i].port));
-//        cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
-//                              socketlist[i].hostname.c_str(),
-//                              socketlist[i].ip.c_str(), str_to_int(socketlist[i].port));
+        cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
+                              socketlist[i].hostname.c_str(),
+                              socketlist[i].ip.c_str(), atoi(socketlist[i].port.c_str()));
     }
-    printf("[%s:END]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
 void log_EVENT(string client_ip, string msg) {
     const char* command = "RECEIVED";
-    printf("[%s:SUCCESS]\n", command);
-    printf("msg from:%s\n[msg]:%s\n", client_ip.c_str(), msg.c_str());
-    printf("[%s:END]\n", command);
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-//    cse4589_print_and_log("msg from:%s\n[msg]:%s\n", client_ip.c_str(), msg.c_str());
-//    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("[%s:SUCCESS]\n", command);
+    cse4589_print_and_log("msg from:%s\n[msg]:%s\n", client_ip.c_str(), msg.c_str());
+    cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_STATISTICS() {
     string command = "STATISTICS";
-    printf("[%s:SUCCESS]\n", command.c_str());
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command.c_str());
+    cse4589_print_and_log("[%s:SUCCESS]\n", command.c_str());
     sort(socketlist.begin(), socketlist.end());
     for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        printf("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
-                                      socketlist[i].hostname.c_str(),
-                                      socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
-                                      socketlist[i].status.c_str());
-//        cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
-//                              socketlist[i].hostname.c_str(),
-//                              socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
-//                              socketlist[i].status.c_str());
+        cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
+                              socketlist[i].hostname.c_str(),
+                              socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
+                              socketlist[i].status.c_str());
     }
-    printf("[%s:END]\n", command.c_str());
-//    cse4589_print_and_log("[%s:END]\n", command.c_str());
+    cse4589_print_and_log("[%s:END]\n", command.c_str());
 }
 void log_EVENTS(string from_ip, string msg, string to_ip) {
     const char* command = "RELAYED";
-    printf("[%s:SUCCESS]\n", command);
-    printf("msg from:%s, to:%s\n[msg]:%s\n", (const char*)from_ip.c_str(), (const char*)to_ip.c_str(), (const char*)msg.c_str());
-    printf("[%s:END]\n", command);
-//    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-//    cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", (const char*)from_ip.c_str(), (const char*)to_ip.c_str(), (const char*)msg.c_str());
-//    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("[%s:SUCCESS]\n", command);
+    cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", (const char*)from_ip.c_str(), (const char*)to_ip.c_str(), (const char*)msg.c_str());
+    cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_BLOCKED(string cli_ip) {
     string cmd = "BLOCED";
@@ -256,29 +236,20 @@ void log_BLOCKED(string cli_ip) {
         return;
     }
     SocketObject* hd = InSetSocket(cli_ip);
-    printf("[%s:SUCCESS]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     for (int i = 0; i < hd->blockeduser.size(); ++i) {
         SocketObject* new_hd = InSetSocket(hd->blockeduser[i]);
-        printf("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
-                                             new_hd->ip.c_str(), new_hd->port.c_str());
-//        cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
-//                              new_hd->ip.c_str(), new_hd->port.c_str());
+        cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
+                              new_hd->ip.c_str(), new_hd->port.c_str());
     }
-    printf("[%s:END]\n", cmd.c_str());
-//    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
-// 我添加了一个函数，只负责log，并不实现EXIT中send() 给server message那部分
 void log_EXIT(){
-    printf("[%s:SUCCESS]\n", "EXIT");
-    printf("[%s:END]\n", "EXIT");
-//    cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
-//    cse4589_print_and_log("[%s:END]\n", "EXIT");
+    cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
+    cse4589_print_and_log("[%s:END]\n", "EXIT");
 }
-
 
 //----------------------------------clientEnd---------------------------------------//
-
 void clientEnd(char *port){
     // client status
     bool loged_in = false;
@@ -334,11 +305,13 @@ void clientEnd(char *port){
                     loged_in = false;
                     log_SUCCESS("LOGOUT");
                 }else if(msg_vec[0] == "EXIT"){
-                    send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
+                    msg = "EXIT " + myIP;
+                    send(sockfd, (const char*)msg.c_str(), msg.length(), 0); 
                     log_EXIT();
                     exit(0);
                 }else if(msg_vec[0] == "REFRESH"){
-                    send(sockfd, (const char*)("REFRESH " + myIP).c_str(), msg.length(), 0); 
+                    msg = "REFRESH " + myIP; 
+                    send(sockfd, (const char*)msg.c_str(), msg.length(), 0); 
                     log_SUCCESS("REFRESH");
                 }else if(msg_vec[0] == "LIST"){
                     log_LIST();
@@ -413,7 +386,7 @@ void clientEnd(char *port){
                 if(recv(sockfd, message, sizeof(message), 0) == 0){
                     // this client is closed by server
                     close(sockfd);
-                    fdmax = 0; // 这里跟狗蛋写的不一样
+                    fdmax = 0;
                     loged_in = false;
                     continue;
                 }
@@ -453,7 +426,6 @@ void clientEnd(char *port){
             // 2) has new instruction
             memset(message, 0, sizeof(message));
             read(STDIN,message,sizeof(message));
-            cout << message << endl;
             msg = message;
 
            	msg = msg.substr(0, msg.length() - 1);
@@ -467,6 +439,8 @@ void clientEnd(char *port){
                 log_IP();
             }else if(msg_vec[0] == "PORT"){
                 log_PORT();
+            }else if(msg_vec[0] == "LIST"){
+                log_LIST();
             }else if(msg_vec[0] == "EXIT"){
                 send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
                 log_EXIT();
@@ -569,12 +543,7 @@ void clientEnd(char *port){
 
 //----------------------------------serverEnd---------------------------------------//
 void serverEnd(string server_port){
-//初始化结构体
-//    for(int i = 0; i<5; i++){
-//        socketlist[i] =
-//    }
 
-    // variable
     fd_set global_rdfs, current_rdfs;
 
     struct sockaddr_storage remoteaddr;
@@ -584,7 +553,7 @@ void serverEnd(string server_port){
     string msg;
     vector<string> msg_p;
     struct addrinfo *ai, *p;
-    //
+
     int listenfd, connfd;
     struct sockaddr_in server_addr, client_addr;
     socklen_t len;
@@ -594,7 +563,7 @@ void serverEnd(string server_port){
     char buf[BUFSIZ],str;
     len = sizeof(struct sockaddr_in);
     const char* charPort = server_port.c_str();
-    //对准备maintain的struct初始化
+
     initMyAddr(charPort);
     printf("My ip address is : %s\n",myIP.c_str());
     listen(sockfd,BACKLOG);
@@ -630,9 +599,6 @@ void serverEnd(string server_port){
 //                    msg = msg.substr(0, msg.length() - 1); 不确定EoF是否需要删除
                     msg = msg.substr(0, msg.length() - 1);
                     split_msg(msg,' ',msg_p);
-                    for (int i = 0; i<msg_p.size();i++){
-                        cout<< msg_p[i] << endl;
-                    }
                     
                     if(msg_p[0] == "LIST"){log_LIST();break;}
                     if(msg_p[0] == "STATISTICS"){log_STATISTICS();break;}
@@ -645,19 +611,16 @@ void serverEnd(string server_port){
 
                 //创造连接
                 else if(listenfd == fdtemp){
-                    cout<< "entered"<<endl;
                     if((connfd = accept(listenfd, (struct sockaddr*)&client_addr,(socklen_t*)&len))<0){
                         perror("accept error.\n");
                         exit(-1);
                     }
-                    printf("receive from %s at Port %d\n",inet_ntop(AF_INET,&client_addr.sin_addr,&str, sizeof(str)),ntohs(client_addr.sin_port));
-                    
+                    // 这里改动了socklen_t
+                    printf("receive from %s at Port %d\n",inet_ntop(AF_INET,&client_addr.sin_addr,&str, sizeof((socklen_t)str)),ntohs(client_addr.sin_port));
                     
                     FD_CLR(fdtemp, &current_rdfs);
                     maxfd = maxfd >connfd? maxfd:connfd;
                     FD_SET(connfd,&global_rdfs);
-                    
-                    
                 }
                 //信息交流
                 else{
@@ -704,7 +667,7 @@ void serverEnd(string server_port){
                         {
                             if (socketlist[i].status == "logged-in")
                             {
-                                message = message + blank + socketlist[i].hostname + blank + socketlist[i].ip + blank + socketlist[i].port;
+                                message = message + space + socketlist[i].hostname + space + socketlist[i].ip + space + socketlist[i].port;
                             }
                         }
                         
@@ -737,7 +700,7 @@ void serverEnd(string server_port){
                         {
                             if (socketlist[i].status == "logged-in")
                             {
-                                message += blank + socketlist[i].hostname + blank + socketlist[i].ip + blank +
+                                message += space + socketlist[i].hostname + space + socketlist[i].ip + space +
                                 socketlist[i].port;
                             }
                         }
@@ -772,7 +735,7 @@ void serverEnd(string server_port){
                                     message = msg_p[2];
                                     for (int m = 3; m < msg_p.size(); m++)
                                     {
-                                        message = message + blank + msg_p[m];
+                                        message = message + space + msg_p[m];
                                     }
                                     
                                     log_EVENTS(from_ip, message, con);
@@ -824,7 +787,6 @@ void serverEnd(string server_port){
                     if(msg_p[0] == "SEND"){
                         string from_ip = msg_p[1];
                         string to_ip = msg_p[2];
-                        //cout<< msg;
                         SocketObject *hd = InSetSocket(to_ip);
                         SocketObject *hd2 = InSetSocket(from_ip);
                         
@@ -838,7 +800,6 @@ void serverEnd(string server_port){
                         {
                             if (hd->status == "logged-in")
                             {
-                                //cout<< msg;
                                 send(hd->cfd, (const char *)msg.c_str(), msg.length(), 0);//
                                 hd->num_msg_rcv = hd->num_msg_rcv + 1;
                                 hd2->num_msg_sent = hd2->num_msg_sent + 1;
@@ -846,7 +807,7 @@ void serverEnd(string server_port){
                                 message = msg_p[3];
                                 for (int m = 4; m < msg_p.size(); m++)
                                 {
-                                    message = message + blank + msg_p[m];
+                                    message = message + space + msg_p[m];
                                 }
                                 log_EVENTS(from_ip, message, to_ip);
                             }
@@ -859,7 +820,7 @@ void serverEnd(string server_port){
                                 message = msg_p[3];
                                 for (int m = 4; m < msg_p.size(); m++)
                                 {
-                                    message = message + blank + msg_p[m];
+                                    message = message + space + msg_p[m];
                                 }
                                 log_EVENTS(from_ip, message, to_ip);
                             }
@@ -878,24 +839,35 @@ void serverEnd(string server_port){
 
 
 //---------------------------------Main Entry--------------------------------------//
-int main(int argc, char **argv){
-    if(argc != 3)
-    {
-        printf("Please enter c/s and Port number");
-        exit(-1);
-    }
-    if(*argv[1]=='s')
-    {
-        string port = argv[2];
-        serverEnd(port);
-    }
-    else if(*argv[1]=='c')
-    {
-        clientEnd(argv[2]);
-    }
-    else{
-        printf("System out");
-        exit(-1);
-    }
-    return 0;
+/**
+ * main function
+ *
+ * @param  argc Number of arguments
+ * @param  argv The argument list
+ * @return 0 EXIT_SUCCESS
+ */
+int main(int argc, char **argv)
+{
+	/*Init. Logger*/
+	cse4589_init_log(argv[2]);
+
+	/* Clear LOGFILE*/
+   	fclose(fopen(LOGFILE, "w"));
+
+	/*Start Here*/
+	if(*argv[1]=='s')
+	{
+	    string port = argv[2];
+	    serverEnd(port);
+	}
+	else if(*argv[1]=='c')
+	{
+	    clientEnd(argv[2]);
+	}
+	else{
+	    printf("System out");
+	    exit(-1);
+	}
+
+	return 0;
 }
