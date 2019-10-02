@@ -199,6 +199,9 @@ void log_LIST() {
     cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     sort(socketlist.begin(), socketlist.end());
     for (unsigned int i = 0; i < socketlist.size(); ++i) {
+        if(socketlist[i].status == "logged-out"){
+            continue;
+        }
         cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
                               socketlist[i].hostname.c_str(),
                               socketlist[i].ip.c_str(), atoi(socketlist[i].port.c_str()));
@@ -230,7 +233,7 @@ void log_EVENTS(string from_ip, string msg, string to_ip) {
     cse4589_print_and_log("[%s:END]\n", command);
 }
 void log_BLOCKED(string cli_ip) {
-    string cmd = "BLOCED";
+    string cmd = "BLOCKED";
     if (!valid_ip(cli_ip) || InSetSocket(cli_ip) == NULL) {
         log_ERROR(cmd);
         return;
@@ -301,6 +304,7 @@ void clientEnd(char *port){
                     log_PORT();
                 }else if(msg_vec[0] == "LOGOUT"){
                     msg = "LOGOUT " + myIP;
+                    cout << msg << endl;
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                     loged_in = false;
                     log_SUCCESS("LOGOUT");
@@ -324,17 +328,11 @@ void clientEnd(char *port){
                     }
 
                     SocketObject *hd = InSetSocket(myIP);
-                    if (hd == NULL)
-                    {
-                        msg = "BLOCK " + myIP + " " + msg_vec[1];
-                        send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                        log_SUCCESS("BLOCK");
-                        continue;
-                    }
                     vector<string>::iterator ret;
                     ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
                     if (ret != hd->blockeduser.end())
                     {
+                        log_ERROR("BLOCK");
                         continue;
                     }
                     hd->blockeduser.push_back(msg_vec[1]);
@@ -439,23 +437,11 @@ void clientEnd(char *port){
                 log_IP();
             }else if(msg_vec[0] == "PORT"){
                 log_PORT();
-            }else if(msg_vec[0] == "LIST"){
-                log_LIST();
             }else if(msg_vec[0] == "EXIT"){
                 send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
                 log_EXIT();
                 exit(0);
             }else if(msg_vec[0] == "LOGIN"){
-                // if ip is not valid, skip other operations
-                if(!valid_ip(msg_vec[1])){
-                    log_ERROR(msg_vec[0]);
-                    continue;
-                }
-                
-                // if ip is valid, try to connect to server
-                //      1) if it is the first time, will need to connect
-                //      2) if has connected to the same server, skip
-                //      3) if has connected to a different server, need to re-connect
                 if(myServerIP != msg_vec[1] || myServerPORT != msg_vec[2]){
                     myServerIP = msg_vec[1];
                     myServerPORT = msg_vec[2];
@@ -481,6 +467,7 @@ void clientEnd(char *port){
                         }
                     }
 
+                    // if ip or port is not correct, cannot connect
                     // no successful connection, log_ERROR & continue
                     if(p == NULL){
                         myServerIP = "";
@@ -594,10 +581,10 @@ void serverEnd(string server_port){
                     memset(&charmsg[0], 0, sizeof(charmsg));
                     n = read(STDIN,charmsg,sizeof(charmsg));
                     fflush(STDIN);
-                    string msg ;
+                    string msg = "";
                     msg = charmsg;
-//                    msg = msg.substr(0, msg.length() - 1); 不确定EoF是否需要删除
                     msg = msg.substr(0, msg.length() - 1);
+                    msg_p.clear();
                     split_msg(msg,' ',msg_p);
                     
                     if(msg_p[0] == "LIST"){log_LIST();break;}
@@ -625,6 +612,7 @@ void serverEnd(string server_port){
                 //信息交流
                 else{
                     /*initialize buffer to receive message*/
+                    memset(&charmsg[0], 0, sizeof(charmsg));
                     bytes = recv(fdtemp, charmsg, sizeof(charmsg), 0 );
                     if(bytes<0){
                         perror("recv error.\n");
@@ -675,10 +663,13 @@ void serverEnd(string server_port){
                         break;}
                     
                     if(msg_p[0] == "LOGOUT"){
+                        cout << "entered logout" << endl;
                         string ip_addr = msg_p[1];
+                        cout << ip_addr << endl;
                         SocketObject *hd = InSetSocket(ip_addr);
                         if (hd != NULL)
                         {
+                            cout << "found this client" << endl;
                             hd->status = "logged-out";
                         }
                         break;}
