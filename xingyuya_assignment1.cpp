@@ -166,6 +166,18 @@ bool valid_ip(string ip_test) {
     return true;
 }
 
+bool valid_port(string port_test){
+    for(int i = 0; i < port_test.size(); i++){
+        if(port_test[i] > '9' || port_test[i] < '0'){
+            return false;
+        }
+    }
+    if(atoi(port_test.c_str()) > 65535 || atoi(port_test.c_str()) == 0){
+        return false;
+    }
+    return true;
+}
+
 //----------------------------------logger------------------------------------------//
 void log_ERROR(string cmd) {
     cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
@@ -442,6 +454,12 @@ void clientEnd(char *port){
                 log_EXIT();
                 exit(0);
             }else if(msg_vec[0] == "LOGIN"){
+                // handle login exceptions
+                if(!valid_ip(msg_vec[1]) || !valid_port(msg_vec[2])){
+                    log_ERROR(msg_vec[0]);
+                    continue;
+                }
+
                 if(myServerIP != msg_vec[1] || myServerPORT != msg_vec[2]){
                     myServerIP = msg_vec[1];
                     myServerPORT = msg_vec[2];
@@ -467,7 +485,6 @@ void clientEnd(char *port){
                         }
                     }
 
-                    // if ip or port is not correct, cannot connect
                     // no successful connection, log_ERROR & continue
                     if(p == NULL){
                         myServerIP = "";
