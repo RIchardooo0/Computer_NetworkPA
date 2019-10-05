@@ -713,6 +713,7 @@ void serverEnd(string server_port){
                             {
                                 continue;
                             }
+                            SocketObject *hd = InSetSocket(socketlist[i].ip);
                             vector<string>::iterator ret;
                             ret = find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip);
                             if (ret == socketlist[i].blockeduser.end())
@@ -733,15 +734,15 @@ void serverEnd(string server_port){
                                 }
                                 else
                                 {
-                                    hd->msgbuffer.push_back(msg);
-                                    hd->num_msg_rcv = hd->num_msg_rcv + 1;
+                                    socketlist[i].msgbuffer.push_back(msg);
+                                    socketlist[i].num_msg_rcv = socketlist[i].num_msg_rcv + 1;
                                     hd2->num_msg_sent = hd2->num_msg_sent + 1;
-                                    string message;
-                                    message = msg_p[3];
-                                    for (int m = 4; m < msg_p.size(); m++)
-                                    {
-                                        message = message + space + msg_p[m];
-                                    }
+//                                    string message;
+//                                    message = msg_p[2];
+//                                    for (int m = 3; m < msg_p.size(); m++)
+//                                    {
+//                                        message = message + space + msg_p[m];
+//                                    }
 //                                    log_EVENTS(from_ip, message, to_ip);
                                 }
                             }
