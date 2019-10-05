@@ -781,9 +781,22 @@ void serverEnd(string server_port){
                                     
                                     log_EVENTS(from_ip, message, con);
                                 }
+                                else
+                                {
+                                    hd->msgbuffer.push_back(msg);
+                                    hd->num_msg_rcv = hd->num_msg_rcv + 1;
+                                    hd2->num_msg_sent = hd2->num_msg_sent + 1;
+                                    string message;
+                                    message = msg_p[3];
+                                    for (int m = 4; m < msg_p.size(); m++)
+                                    {
+                                        message = message + space + msg_p[m];
+                                    }
+//                                    log_EVENTS(from_ip, message, to_ip);
+                                }
                             }
                         }
-                        break;}
+                    }
                     
                     if(msg_p[0] == "BLOCK"){
                         string from_ip = msg_p[1];
@@ -803,7 +816,7 @@ void serverEnd(string server_port){
                         {
                             log_ERROR("BLOCK");
                         }
-                        break;}
+                    }
                     
                     if(msg_p[0] == "UNBLOCK"){
                         string from_ip = msg_p[1];
@@ -823,7 +836,7 @@ void serverEnd(string server_port){
                         {
                             hd->blockeduser.erase(ret);
                         }
-                        break;}
+                    }
                     
                     if(msg_p[0] == "SEND"){
                         string from_ip = msg_p[1];
@@ -865,7 +878,6 @@ void serverEnd(string server_port){
                                 }
                                 // log_EVENTS(from_ip, message, to_ip);
                             }
-                            break;
                         }
                     }
                     
