@@ -42,6 +42,32 @@ int fdmax;
 
 //------------------------------data structure-------------------------------------//
 
+class Client{
+    public:
+        int cfd;
+        string hostname;
+        string ip;
+        string port;
+        int num_msg_sent;
+        int num_msg_rcv;
+        string status;
+        vector<string> blockeduser;
+        vector<string> msgbuffer;
+        
+        // 重载运算符，用于ｖｅｃｔｏｒ排序，ＬＩＳＴ时用到
+        bool operator<(const Client &another){
+            return atoi(this->port.c_str()) < atoi(another.port.c_str());
+        }
+        
+        // constructor
+        Client(int cfd, string hostname, string ip, string port){
+            this->cfd = cfd;
+            this->hostname = hostname;
+            this->ip = ip;
+            this->port = port;
+        }
+};
+
 struct SocketObject{
     int cfd;
     string hostname;
@@ -73,6 +99,7 @@ SocketObject* newSocketObject(int cfd, string hostname, string ip, string port){
     return hd;
 
 }
+
 SocketObject* InSetSocket(string ip, string port) {
     for (unsigned int i = 0; i < socketlist.size(); ++i) {
         SocketObject* hd = &socketlist[i];
@@ -663,6 +690,14 @@ void serverEnd(string server_port){
                                 {
                                     string mgs = *it;
                                     send(hd->cfd, (const char *)mgs.c_str(), mgs.length(), 0);
+
+                                    //　这里在转发时候，打一次ｌｏｇ
+                                    //　但是不确定是不是这里的问题
+                                    split_msg(msg,' ',msg_p);
+                                    string org_ip = msg_p[1];
+                                    string tar_ip = (msg_p[0] == "BROADCAST") ? "255.255.255.255" : msg_p[2];
+                                    string bufmsg = (msg_p[0] == "BROADCAST") ? msg_p[2] : msg_p[3];
+                                    log_EVENTS(org_ip, bufmsg, tar_ip);
                                 }
                                 hd->msgbuffer.clear();
                             }
@@ -750,16 +785,18 @@ void serverEnd(string server_port){
                                 }
                                 else
                                 {
-                                    hd->msgbuffer.push_back(msg);
-                                    hd->num_msg_rcv = hd->num_msg_rcv + 1;
+                                    socketlist[i].msgbuffer.push_back(msg);
+                                    socketlist[i].num_msg_rcv = socketlist[i].num_msg_rcv + 1;
                                     hd2->num_msg_sent = hd2->num_msg_sent + 1;
-                                    string message;
-                                    message = msg_p[3];
-                                    for (int m = 4; m < msg_p.size(); m++)
-                                    {
-                                        message = message + space + msg_p[m];
-                                    }
-//                                    log_EVENTS(from_ip, message, to_ip);
+                                    
+                                    // 这里先不ｌｏｇ，看ｂｕｆｆｅｒ要在哪里ｌｏｇ
+                                    // string message;
+                                    // message = msg_p[3];
+                                    // for (int m = 4; m < msg_p.size(); m++)
+                                    // {
+                                    //     message = message + space + msg_p[m];
+                                    // }
+                                    // log_EVENTS(from_ip, message, to_ip);
                                 }
                             }
                         }
@@ -837,13 +874,15 @@ void serverEnd(string server_port){
                                 hd->msgbuffer.push_back(msg);
                                 hd->num_msg_rcv = hd->num_msg_rcv + 1;
                                 hd2->num_msg_sent = hd2->num_msg_sent + 1;
-                                string message;
-                                message = msg_p[3];
-                                for (int m = 4; m < msg_p.size(); m++)
-                                {
-                                    message = message + space + msg_p[m];
-                                }
-                                log_EVENTS(from_ip, message, to_ip);
+                                
+                                // 这里先不ｌｏｇ，看ｂｕｆｆｅｒ要在哪里ｌｏｇ
+                                // string message;
+                                // message = msg_p[3];
+                                // for (int m = 4; m < msg_p.size(); m++)
+                                // {
+                                //     message = message + space + msg_p[m];
+                                // }
+                                // log_EVENTS(from_ip, message, to_ip);
                             }
                         }
                     }
