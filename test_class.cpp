@@ -39,7 +39,11 @@ int main(){
     s1.printIP();
     s1.printPORT();
 
-//    if(s1 < s2){
-//        cout << "works well" << endl;
-//    }
+    SocketObj s2("127.0.0.1", "19999");
+    s2.printIP();
+    s2.printPORT();
+
+    if(s2 < s1){
+        cout << "works well" << endl;
+    }
 }
