@@ -163,13 +163,17 @@ bool valid_ip(string ip_test) {
     if(num != 3) return false;
     vector<string> ip_parts;
     split_msg(ip_test,'.', ip_parts);
-    for(int i = 0; i < 4; ++i){
+    int i = 0;
+    while(i < 4){
         for(int j = 0; j < ip_parts[i].length(); ++j){
-            if(ip_parts[i][j] > '9' || ip_parts[i][j] < '0') return false;
+            if(ip_parts[i][j] > '9' || ip_parts[i][j] < '0'){
+                return false;
+            }
         }
-    }
-    for(int i = 0; i < 4; ++i){
-        if(atoi(ip_parts[i].c_str()) > 255) return false;
+        if(atoi(ip_parts[i].c_str()) > 255 || atoi(ip_parts[i].c_str()) < 0){
+            return false;
+        }
+        i++;
     }
     return true;
 }
@@ -191,66 +195,17 @@ void log_ERROR(string cmd) {
     cse4589_print_and_log("[%s:ERROR]\n", cmd.c_str());
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
-void log_SUCCESS(string cmd) {
+void log_Client_EVENT(string client_ip, string msg) {
+    string cmd = "RECEIVED";
     cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
-    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
-}
-void log_IP(){
-    const char* command = "IP";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-    cse4589_print_and_log("IP:%s\n", myIP.c_str());
-    cse4589_print_and_log("[%s:END]\n", command);
-}
-void log_AUTHOR() {
-    const char* command = "AUTHOR";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-    string ubit_name_2 = "";
-    cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name_2.c_str());
-    cse4589_print_and_log("[%s:END]\n", command);
-}
-void log_PORT() {
-    const char* command = "PORT";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-    cse4589_print_and_log("PORT:%d\n", atoi(myPort.c_str()));
-    cse4589_print_and_log("[%s:END]\n", command);
-}
-void log_LIST() {
-    string cmd = "LIST";
-    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
-    sort(socketlist.begin(), socketlist.end());
-    for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        if(socketlist[i].status == "logged-out"){
-            continue;
-        }
-        cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
-                              socketlist[i].hostname.c_str(),
-                              socketlist[i].ip.c_str(), atoi(socketlist[i].port.c_str()));
-    }
-    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
-}
-void log_EVENT(string client_ip, string msg) {
-    const char* command = "RECEIVED";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command);
     cse4589_print_and_log("msg from:%s\n[msg]:%s\n", client_ip.c_str(), msg.c_str());
-    cse4589_print_and_log("[%s:END]\n", command);
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
-void log_STATISTICS() {
-    string command = "STATISTICS";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command.c_str());
-    sort(socketlist.begin(), socketlist.end());
-    for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
-                              socketlist[i].hostname.c_str(),
-                              socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
-                              socketlist[i].status.c_str());
-    }
-    cse4589_print_and_log("[%s:END]\n", command.c_str());
-}
-void log_EVENTS(string from_ip, string msg, string to_ip) {
-    const char* command = "RELAYED";
-    cse4589_print_and_log("[%s:SUCCESS]\n", command);
-    cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", (const char*)from_ip.c_str(), (const char*)to_ip.c_str(), (const char*)msg.c_str());
-    cse4589_print_and_log("[%s:END]\n", command);
+void log_Server_EVENT(string from_ip, string msg, string to_ip) {
+    string cmd = "RELAYED";
+    cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
+    cse4589_print_and_log("msg from:%s, to:%s\n[msg]:%s\n", from_ip.c_str(), to_ip.c_str(), msg.c_str());
+    cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
 void log_BLOCKED(string cli_ip) {
     string cmd = "BLOCKED";
@@ -267,9 +222,47 @@ void log_BLOCKED(string cli_ip) {
     }
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
-void log_EXIT(){
-    cse4589_print_and_log("[%s:SUCCESS]\n", "EXIT");
-    cse4589_print_and_log("[%s:END]\n", "EXIT");
+// log general info when !SUCCESS!
+//    type includes: AUTHOR, IP, PORT, STATISTICS, LIST
+//    also: SEND, EXIT, LOGOUT, REFRESH, BLOCK, UNBLOCK (do nothing specifically)
+void log_GeneralInfo(string type){
+    // begining
+    cse4589_print_and_log("[%s:SUCCESS]\n", type.c_str());
+
+    // different cases
+    if(type == "AUTHOR"){
+        string ubit_name = "";
+        cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name.c_str());
+    }
+    if(type == "IP"){
+        cse4589_print_and_log("IP:%s\n", myIP.c_str());
+    }
+    if(type == "PORT"){
+        cse4589_print_and_log("PORT:%d\n", atoi(myPort.c_str()));
+    }
+    if(type == "STATISTICS"){
+        sort(socketlist.begin(), socketlist.end());
+        for (int i = 0; i < socketlist.size(); ++i) {
+            cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
+                                  socketlist[i].hostname.c_str(),
+                                  socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
+                                  socketlist[i].status.c_str());
+        }
+    }
+    if(type == "LIST"){
+        sort(socketlist.begin(), socketlist.end());
+        for (int i = 0; i < socketlist.size(); ++i) {
+            if(socketlist[i].status == "logged-out"){
+                continue;
+            }
+            cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
+                                  socketlist[i].hostname.c_str(),
+                                  socketlist[i].ip.c_str(), atoi(socketlist[i].port.c_str()));
+        }
+    }
+
+    // end
+    cse4589_print_and_log("[%s:END]\n", type.c_str());
 }
 
 //----------------------------------clientEnd---------------------------------------//
@@ -316,29 +309,24 @@ void clientEnd(char *port){
                 split_msg(msg, ' ', msg_vec);
 
                 // for different instructions
-                if(msg_vec[0] == "AUTHOR"){
-                    log_AUTHOR();
-                }else if(msg_vec[0] == "IP"){
-                    log_IP();
-                }else if(msg_vec[0] == "PORT"){
-                    log_PORT();
+                if(msg_vec[0] == "AUTHOR" || msg_vec[0] == "IP" || msg_vec[0] == "PORT"){
+                    log_GeneralInfo(msg_vec[0]);
                 }else if(msg_vec[0] == "LOGOUT"){
                     msg = "LOGOUT " + myIP;
-                    cout << msg << endl;
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                     loged_in = false;
-                    log_SUCCESS("LOGOUT");
+                    log_GeneralInfo(msg_vec[0]);
                 }else if(msg_vec[0] == "EXIT"){
                     msg = "EXIT " + myIP;
                     send(sockfd, (const char*)msg.c_str(), msg.length(), 0); 
-                    log_EXIT();
+                    log_GeneralInfo(msg_vec[0]);
                     exit(0);
                 }else if(msg_vec[0] == "REFRESH"){
                     msg = "REFRESH " + myIP; 
                     send(sockfd, (const char*)msg.c_str(), msg.length(), 0); 
-                    log_SUCCESS("REFRESH");
+                    log_GeneralInfo(msg_vec[0]);
                 }else if(msg_vec[0] == "LIST"){
-                    log_LIST();
+                    log_GeneralInfo(msg_vec[0]);
                 }else if(msg_vec[0] == "BLOCK"){
                     // if block user not valid or not in the list
                     if (!valid_ip(msg_vec[1]) || getClient(-1, msg_vec[1]) == NULL)
@@ -358,7 +346,7 @@ void clientEnd(char *port){
                     hd->blockeduser.push_back(msg_vec[1]);
                     msg = "BLOCK " + myIP + " " + msg_vec[1];
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                    log_SUCCESS("BLOCK");
+                    log_GeneralInfo("BLOCK");
                 }else if(msg_vec[0] == "UNBLOCK"){
                     if (getClient(-1, msg_vec[1]) == NULL){
                         log_ERROR("UNBLOCK");
@@ -368,7 +356,7 @@ void clientEnd(char *port){
                     if (hd == NULL){
                         msg = "UNBLOCK " + myIP + " " + msg_vec[1];
                         send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                        log_SUCCESS("UNBLOCK");
+                        log_GeneralInfo("UNBLOCK");
                     }else{
                         vector<string>::iterator ret;
                         ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
@@ -377,7 +365,7 @@ void clientEnd(char *port){
                         }
                         msg = "UNBLOCK " + myIP + " " + msg_vec[1];
                         send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                        log_SUCCESS("UNBLOCK");
+                        log_GeneralInfo("UNBLOCK");
                     }
                 }else if(msg_vec[0] == "SEND"){
                     if(!valid_ip(msg_vec[1]) || getClient(-1, msg_vec[1]) == NULL){
@@ -389,14 +377,14 @@ void clientEnd(char *port){
                         msg += " " + msg_vec[i];
                     }
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                    log_SUCCESS("SEND");
+                    log_GeneralInfo("SEND");
                 }else if(msg_vec[0] == "BROADCAST"){
                     msg = "BROADCAST " + myIP;
                     for(int i = 1; i < msg_vec.size(); i++){
                         msg += " " + msg_vec[i];
                     }
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
-                    log_SUCCESS("BROADCAST");
+                    log_GeneralInfo("BROADCAST");
                 }
             }else if(FD_ISSET(sockfd, &readfds)){
                 // receive message from server
@@ -424,13 +412,13 @@ void clientEnd(char *port){
                     for(int j = 4; j < msg_vec.size(); j++){
                         msg += " " + msg_vec[j];
                     }
-                    log_EVENT(msg_vec[1], msg);
+                    log_Client_EVENT(msg_vec[1], msg);
                 }else if(msg_vec[0] == "BROADCAST"){
                     msg = msg_vec[2];
                     for(int j = 3; j < msg_vec.size(); j++){
                         msg += " " + msg_vec[j];
                     }
-                    log_EVENT(msg_vec[1], msg);
+                    log_Client_EVENT(msg_vec[1], msg);
                 }
             }
         }else{
@@ -452,15 +440,11 @@ void clientEnd(char *port){
             fflush(0); // 这里不flush的话，会有bug吗？
             split_msg(msg, ' ', msg_vec);
             // for different instructions
-            if(msg_vec[0] == "AUTHOR"){
-                log_AUTHOR();
-            }else if(msg_vec[0] == "IP"){
-                log_IP();
-            }else if(msg_vec[0] == "PORT"){
-                log_PORT();
+            if(msg_vec[0] == "AUTHOR" || msg_vec[0] == "IP" || msg_vec[0] == "PORT"){
+                log_GeneralInfo(msg_vec[0]);
             }else if(msg_vec[0] == "EXIT"){
                 send(sockfd, (const char*)("EXIT " + myIP).c_str(), msg.length(), 0); 
-                log_EXIT();
+                log_GeneralInfo(msg_vec[0]);
                 exit(0);
             }else if(msg_vec[0] == "LOGIN"){
                 // handle login exceptions
@@ -537,18 +521,18 @@ void clientEnd(char *port){
                         for(int j = 4; j < msg_vec.size(); j++){
                             msg += " " + msg_vec[j];
                         }
-                        log_EVENT(msg_vec[1], msg);
+                        log_Client_EVENT(msg_vec[1], msg);
                     }else if(msg_vec[0] == "BROADCAST"){
                         msg = msg_vec[2];
                         for(int j = 3; j < msg_vec.size(); j++){
                             msg += " " + msg_vec[j];
                         }
-                        log_EVENT(msg_vec[1], msg);
+                        log_Client_EVENT(msg_vec[1], msg);
                     }
                 }
 
                 // login success message
-                log_SUCCESS("LOGIN");
+                log_GeneralInfo("LOGIN");
             }
         }
     }
@@ -614,13 +598,11 @@ void serverEnd(string server_port){
                     msg_p.clear();
                     split_msg(msg,' ',msg_p);
                     
-                    if(msg_p[0] == "LIST"){log_LIST();break;}
-                    if(msg_p[0] == "STATISTICS"){log_STATISTICS();break;}
-                    if(msg_p[0] == "IP"){log_IP();break;}
-                    if(msg_p[0] == "AUTHOR"){log_AUTHOR();break;}
-                    if(msg_p[0] == "PORT"){log_PORT();break;}
+                    if(msg_p[0] == "AUTHOR" || msg_p[0] == "LIST" || msg_p[0] == "STATISTICS" || msg_p[0] == "IP" || msg_p[0] == "PORT"){
+                        log_GeneralInfo(msg_p[0]);
+                        break;
+                    }
                     if(msg_p[0] == "BLOCKED"){log_BLOCKED(msg_p[1]);break;}
-
                 }
 
                 //创造连接
@@ -680,7 +662,7 @@ void serverEnd(string server_port){
                                     string org_ip = msg_p[1];
                                     string tar_ip = (msg_p[0] == "BROADCAST") ? "255.255.255.255" : msg_p[2];
                                     string bufmsg = (msg_p[0] == "BROADCAST") ? msg_p[2] : msg_p[3];
-                                    log_EVENTS(org_ip, bufmsg, tar_ip);
+                                    log_Server_EVENT(org_ip, bufmsg, tar_ip);
                                 }
                                 hd->msgbuffer.clear();
                             }
@@ -766,7 +748,7 @@ void serverEnd(string server_port){
                                         message += space + msg_p[m];
                                     }
                                     
-                                    log_EVENTS(from_ip, message, con);
+                                    log_Server_EVENT(from_ip, message, con);
                                 }
                                 else
                                 {
@@ -832,7 +814,7 @@ void serverEnd(string server_port){
                             {
                                 message += space + msg_p[m];
                             }
-                            log_EVENTS(msg_p[1], message, msg_p[2]);
+                            log_Server_EVENT(msg_p[1], message, msg_p[2]);
                         }
                         else
                         {

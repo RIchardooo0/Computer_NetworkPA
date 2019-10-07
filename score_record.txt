@@ -1,4 +1,4 @@
-author              0/0
+author              TRUE / FALSE
 startup             5/5
 ip                  5/5
 port                2.5/2.5
