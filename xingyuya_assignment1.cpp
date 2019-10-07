@@ -44,13 +44,15 @@ int fdmax;
 
 class Client{
     public:
-        int cfd;
         string hostname;
         string ip;
         string port;
+        string status;
+
+        int cfd;
         int num_msg_sent;
         int num_msg_rcv;
-        string status;
+
         vector<string> blockeduser;
         vector<string> msgbuffer;
         
@@ -61,45 +63,51 @@ class Client{
         
         // constructor
         Client(int cfd, string hostname, string ip, string port){
-            this->cfd = cfd;
             this->hostname = hostname;
             this->ip = ip;
             this->port = port;
+            this->status = "logged-in";
+
+            this->cfd = cfd;
             this->num_msg_rcv = 0;
             this->num_msg_sent = 0;
-            this->status = "logged-in";
         }
 };
 
 vector<Client> socketlist;
 
-Client* InSetSocket(string ip, string port) {
-    for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        Client* hd = &socketlist[i];
-        if (hd->ip == ip && hd->port == port) {
-            return hd;
+// get client that connected to the server
+//    return client pointer if found
+//    return NULL if not fount
+Client* getClient(int cfd = -1, string ip = "", string port = "") {
+    if(cfd > 0){
+        for (int i = 0; i < socketlist.size(); ++i) {
+            if (socketlist[i].cfd == cfd) {
+                return &socketlist[i];
+            }
         }
+        return NULL;
     }
-    return NULL;
-}
 
-Client* InSetSocket(string ip) {
-    for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        Client* hd = &socketlist[i];
-        if (hd->ip == ip) {
-            return hd;
+    if(ip.size() > 0 && port.size() > 0){
+        for (int i = 0; i < socketlist.size(); ++i) {
+            Client* hd = &socketlist[i];
+            if (hd->ip == ip && hd->port == port) {
+                return hd;
+            }
         }
+        return NULL;
     }
-    return NULL;
-}
 
-Client* InSetSocket(int cfd) {
-    for (unsigned int i = 0; i < socketlist.size(); ++i) {
-        Client* hd = &socketlist[i];
-        if (hd->cfd == cfd) {
-            return hd;
+    if(ip.size() > 0){
+        for (int i = 0; i < socketlist.size(); ++i) {
+            if (socketlist[i].ip == ip) {
+                return &socketlist[i];
+            }
         }
+        return NULL;
     }
+
     return NULL;
 }
 
@@ -246,14 +254,14 @@ void log_EVENTS(string from_ip, string msg, string to_ip) {
 }
 void log_BLOCKED(string cli_ip) {
     string cmd = "BLOCKED";
-    if (!valid_ip(cli_ip) || InSetSocket(cli_ip) == NULL) {
+    if (!valid_ip(cli_ip) || getClient(-1, cli_ip) == NULL) {
         log_ERROR(cmd);
         return;
     }
-    Client* hd = InSetSocket(cli_ip);
+    Client* hd = getClient(-1, cli_ip);
     cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     for (int i = 0; i < hd->blockeduser.size(); ++i) {
-        Client* new_hd = InSetSocket(hd->blockeduser[i]);
+        Client* new_hd = getClient(-1, hd->blockeduser[i]);
         cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
                               new_hd->ip.c_str(), new_hd->port.c_str());
     }
@@ -333,13 +341,13 @@ void clientEnd(char *port){
                     log_LIST();
                 }else if(msg_vec[0] == "BLOCK"){
                     // if block user not valid or not in the list
-                    if (!valid_ip(msg_vec[1]) || InSetSocket(msg_vec[1]) == NULL)
+                    if (!valid_ip(msg_vec[1]) || getClient(-1, msg_vec[1]) == NULL)
                     {
                         log_ERROR("BLOCK");
                         continue;
                     }
 
-                    Client *hd = InSetSocket(myIP);
+                    Client *hd = getClient(-1, myIP);
                     vector<string>::iterator ret;
                     ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
                     if (ret != hd->blockeduser.end())
@@ -352,11 +360,11 @@ void clientEnd(char *port){
                     send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                     log_SUCCESS("BLOCK");
                 }else if(msg_vec[0] == "UNBLOCK"){
-                    if (InSetSocket(msg_vec[1]) == NULL){
+                    if (getClient(-1, msg_vec[1]) == NULL){
                         log_ERROR("UNBLOCK");
                         continue;
                     }
-                    Client *hd = InSetSocket(sockfd);
+                    Client *hd = getClient(sockfd);
                     if (hd == NULL){
                         msg = "UNBLOCK " + myIP + " " + msg_vec[1];
                         send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
@@ -372,7 +380,7 @@ void clientEnd(char *port){
                         log_SUCCESS("UNBLOCK");
                     }
                 }else if(msg_vec[0] == "SEND"){
-                    if(!valid_ip(msg_vec[1]) || InSetSocket(msg_vec[1]) == NULL){
+                    if(!valid_ip(msg_vec[1]) || getClient(-1, msg_vec[1]) == NULL){
                         log_ERROR("SEND");
                         continue;
                     }
@@ -406,7 +414,7 @@ void clientEnd(char *port){
                 if(msg_vec[0] == "REFRESH"){
                     socketlist.clear();
                     for(int j = 1; j < (msg_vec.size() - 1); j += 3){
-                        if(InSetSocket(msg_vec[j+1], msg_vec[j+2]) == NULL){
+                        if(getClient(-1, msg_vec[j+1], msg_vec[j+2]) == NULL){
                             Client clt(-2, msg_vec[j], msg_vec[j+1], msg_vec[j+2]);
                             socketlist.push_back(clt);
                         }
@@ -519,7 +527,7 @@ void clientEnd(char *port){
                     if(msg_vec[0] == "REFRESH"){
                         socketlist.clear();
                         for(int j = 1; j < (msg_vec.size() - 1); j += 3){
-                            if(InSetSocket(msg_vec[j+1], msg_vec[j+2]) == NULL){
+                            if(getClient(-1, msg_vec[j+1], msg_vec[j+2]) == NULL){
                                 Client clt(-2, msg_vec[j], msg_vec[j+1], msg_vec[j+2]);
                                 socketlist.push_back(clt);
                             }
@@ -649,7 +657,7 @@ void serverEnd(string server_port){
                         string host = msg_p[1];
                         string host_ip = msg_p[2];
                         string port = msg_p[3];
-                        Client *hd = InSetSocket(fdtemp);
+                        Client *hd = getClient(fdtemp);
                         
                         if (hd == NULL)
                         {
@@ -693,7 +701,7 @@ void serverEnd(string server_port){
                         cout << "entered logout" << endl;
                         string ip_addr = msg_p[1];
                         cout << ip_addr << endl;
-                        Client *hd = InSetSocket(ip_addr);
+                        Client *hd = getClient(-1, ip_addr);
                         if (hd != NULL)
                         {
                             cout << "found this client" << endl;
@@ -729,7 +737,7 @@ void serverEnd(string server_port){
                         string con = "255.255.255.255";
 
                         string from_ip = msg_p[1];
-                        Client *hd2 = InSetSocket(from_ip);
+                        Client *hd2 = getClient(-1, from_ip);
                         if (hd2 == NULL)
                         {
                             continue;
@@ -741,7 +749,7 @@ void serverEnd(string server_port){
                             {
                                 continue;
                             }
-                            SocketObject *hd = InSetSocket(socketlist[i].ip);
+                            Client *hd = getClient(-1, socketlist[i].ip);
                             vector<string>::iterator ret;
                             ret = find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip);
                             if (ret == socketlist[i].blockeduser.end())
@@ -773,9 +781,9 @@ void serverEnd(string server_port){
                     if(msg_p[0] == "BLOCK"){
                         string from_ip = msg_p[1];
                         string to_ip = msg_p[2];
-                        Client *hd = InSetSocket(from_ip);
+                        Client *hd = getClient(-1, from_ip);
 
-                        if (valid_ip(to_ip) && (InSetSocket(to_ip) != NULL) && (find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip) == hd->blockeduser.end())){
+                        if (valid_ip(to_ip) && (getClient(-1, to_ip) != NULL) && (find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip) == hd->blockeduser.end())){
                             hd->blockeduser.push_back(to_ip);
                         }else{
                             log_ERROR("BLOCK");
@@ -785,8 +793,8 @@ void serverEnd(string server_port){
                     if(msg_p[0] == "UNBLOCK"){
                         string from_ip = msg_p[1];
                         string to_ip = msg_p[2];
-                        Client *hd = InSetSocket(from_ip);
-                        if (!valid_ip(to_ip) || InSetSocket(to_ip) == NULL || (hd->blockeduser.end() == find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip))){
+                        Client *hd = getClient(-1, from_ip);
+                        if (!valid_ip(to_ip) || getClient(-1, to_ip) == NULL || (hd->blockeduser.end() == find(hd->blockeduser.begin(), hd->blockeduser.end(), to_ip))){
                             log_ERROR("UNBLOCK");
                         }
                         else
@@ -798,14 +806,14 @@ void serverEnd(string server_port){
                     if(msg_p[0] == "SEND"){
                         string from_ip = msg_p[1];
                         string to_ip = msg_p[2];
-                        Client *hd = InSetSocket(to_ip);
+                        Client *hd = getClient(-1, to_ip);
 
                         if (hd == NULL)
                         {
                             continue;
                         }
 
-                        Client *hd2 = InSetSocket(from_ip);
+                        Client *hd2 = getClient(-1, from_ip);
                         
                         vector<string>::iterator ret;
                         ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), from_ip);
