@@ -741,6 +741,7 @@ void serverEnd(string server_port){
                             {
                                 continue;
                             }
+                            SocketObject *hd = InSetSocket(socketlist[i].ip);
                             vector<string>::iterator ret;
                             ret = find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip);
                             if (ret == socketlist[i].blockeduser.end())
