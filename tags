@@ -1,0 +1,47 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	//
+BACKLOG	xingyuya_assignment1.cpp	/^#define BACKLOG /;"	d	file:
+Client	xingyuya_assignment1.cpp	/^        Client(int cfd, string hostname, string ip, string port){$/;"	f	class:Client	file:
+Client	xingyuya_assignment1.cpp	/^class Client{$/;"	c	file:
+RT_ERR	xingyuya_assignment1.cpp	/^#define RT_ERR /;"	d	file:
+SERV_PORT	xingyuya_assignment1.cpp	/^#define SERV_PORT /;"	d	file:
+STDIN	xingyuya_assignment1.cpp	/^#define STDIN /;"	d	file:
+blockeduser	xingyuya_assignment1.cpp	/^        vector<string> blockeduser;$/;"	m	class:Client	typeref:typename:vector<string>	file:
+cfd	xingyuya_assignment1.cpp	/^        int cfd;$/;"	m	class:Client	typeref:typename:int	file:
+clientEnd	xingyuya_assignment1.cpp	/^void clientEnd(char *port){$/;"	f	typeref:typename:void
+fdmax	xingyuya_assignment1.cpp	/^int fdmax;$/;"	v	typeref:typename:int
+getClient	xingyuya_assignment1.cpp	/^Client* getClient(int cfd = -1, string ip = "", string port = "") {$/;"	f	typeref:typename:Client *
+hints	xingyuya_assignment1.cpp	/^struct addrinfo hints;$/;"	v	typeref:struct:addrinfo
+hostname	xingyuya_assignment1.cpp	/^        string hostname;$/;"	m	class:Client	typeref:typename:string	file:
+initMyAddr	xingyuya_assignment1.cpp	/^void initMyAddr(const char* port){$/;"	f	typeref:typename:void
+ip	xingyuya_assignment1.cpp	/^        string ip;$/;"	m	class:Client	typeref:typename:string	file:
+log_BLOCKED	xingyuya_assignment1.cpp	/^void log_BLOCKED(string cli_ip) {$/;"	f	typeref:typename:void
+log_Client_EVENT	xingyuya_assignment1.cpp	/^void log_Client_EVENT(string client_ip, string msg) {$/;"	f	typeref:typename:void
+log_ERROR	xingyuya_assignment1.cpp	/^void log_ERROR(string cmd) {$/;"	f	typeref:typename:void
+log_GeneralInfo	xingyuya_assignment1.cpp	/^void log_GeneralInfo(string type){$/;"	f	typeref:typename:void
+log_Server_EVENT	xingyuya_assignment1.cpp	/^void log_Server_EVENT(string from_ip, string msg, string to_ip) {$/;"	f	typeref:typename:void
+main	xingyuya_assignment1.cpp	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
+masterfds	xingyuya_assignment1.cpp	/^fd_set masterfds;$/;"	v	typeref:typename:fd_set
+msgbuffer	xingyuya_assignment1.cpp	/^        vector<string> msgbuffer;$/;"	m	class:Client	typeref:typename:vector<string>	file:
+myAddrInfo	xingyuya_assignment1.cpp	/^struct addrinfo *myAddrInfo;$/;"	v	typeref:struct:addrinfo *
+myHostname	xingyuya_assignment1.cpp	/^string myHostname;$/;"	v	typeref:typename:string
+myIP	xingyuya_assignment1.cpp	/^string myIP;$/;"	v	typeref:typename:string
+myPort	xingyuya_assignment1.cpp	/^string myPort;$/;"	v	typeref:typename:string
+num_msg_rcv	xingyuya_assignment1.cpp	/^        int num_msg_rcv;$/;"	m	class:Client	typeref:typename:int	file:
+num_msg_sent	xingyuya_assignment1.cpp	/^        int num_msg_sent;$/;"	m	class:Client	typeref:typename:int	file:
+operator <	xingyuya_assignment1.cpp	/^        bool operator<(const Client &another) const {$/;"	f	class:Client	typeref:typename:bool	file:
+port	xingyuya_assignment1.cpp	/^        string port;$/;"	m	class:Client	typeref:typename:string	file:
+readfds	xingyuya_assignment1.cpp	/^fd_set readfds;$/;"	v	typeref:typename:fd_set
+serverEnd	xingyuya_assignment1.cpp	/^void serverEnd(string server_port){$/;"	f	typeref:typename:void
+socketlist	xingyuya_assignment1.cpp	/^vector<Client> socketlist;$/;"	v	typeref:typename:vector<Client>
+sockfd	xingyuya_assignment1.cpp	/^int sockfd;$/;"	v	typeref:typename:int
+space	xingyuya_assignment1.cpp	/^string space = " ";$/;"	v	typeref:typename:string
+split_msg	xingyuya_assignment1.cpp	/^void split_msg(string &src, char spt, vector<string> &dest){$/;"	f	typeref:typename:void
+status	xingyuya_assignment1.cpp	/^        string status;$/;"	m	class:Client	typeref:typename:string	file:
+valid_ip	xingyuya_assignment1.cpp	/^bool valid_ip(string ip_test) {$/;"	f	typeref:typename:bool
+valid_port	xingyuya_assignment1.cpp	/^bool valid_port(string port_test){$/;"	f	typeref:typename:bool
