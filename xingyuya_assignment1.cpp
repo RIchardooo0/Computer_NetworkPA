@@ -56,12 +56,10 @@ class Client{
         vector<string> blockeduser;
         vector<string> msgbuffer;
         
-        // 重载运算符，用于ｖｅｃｔｏｒ排序，ＬＩＳＴ时用到
         bool operator<(const Client &another) const {
             return atoi(this->port.c_str()) < atoi(another.port.c_str());
         }
         
-        // constructor
         Client(int cfd, string hostname, string ip, string port){
             this->hostname = hostname;
             this->ip = ip;
@@ -76,9 +74,6 @@ class Client{
 
 vector<Client> socketlist;
 
-// get client that connected to the server
-//    return client pointer if found
-//    return NULL if not fount
 Client* getClient(int cfd = -1, string ip = "", string port = "") {
     if(cfd > 0){
         for (int i = 0; i < socketlist.size(); ++i) {
@@ -90,10 +85,9 @@ Client* getClient(int cfd = -1, string ip = "", string port = "") {
     }
 
     if(ip.size() > 0 && port.size() > 0){
-        for (int i = 0; i < socketlist.size(); ++i) {
-            Client* hd = &socketlist[i];
-            if (hd->ip == ip && hd->port == port) {
-                return hd;
+        for(vector<Client>::iterator itr = socketlist.begin(); itr != socketlist.end(); itr++){
+            if (itr->ip == ip && itr->port == port) {
+                return &(*itr);
             }
         }
         return NULL;
@@ -114,15 +108,12 @@ Client* getClient(int cfd = -1, string ip = "", string port = "") {
 //------------------------------helper functions------------------------------------//
 // initialization, for server & client
 void initMyAddr(const char* port){
-    // myPort
     myPort = port;
 
-    // myHostname
     char hostname[1024];
     gethostname(hostname, sizeof(hostname));
     myHostname = hostname;
 
-    // myIP
     struct hostent *ht = gethostbyname(myHostname.c_str());
     for(int i = 0; ht->h_addr_list[i] != 0; i++){
         struct in_addr in;
@@ -147,8 +138,6 @@ void initMyAddr(const char* port){
     freeaddrinfo(myAddrInfo);
 }
 
-// string splitor to get message instructions
-
 void split_msg(string &src, char spt, vector<string> &dest){
     stringstream sstrm(src);
     string tmp;
@@ -166,7 +155,9 @@ bool valid_ip(string ip_test) {
     int i = 0;
     while(i < 4){
         for(int j = 0; j < ip_parts[i].length(); ++j){
-            if(ip_parts[i][j] > '9' || ip_parts[i][j] < '0'){
+            if(ip_parts[i][j] >= '0' && ip_parts[i][j] <= '9'){
+                continue;
+            }else{
                 return false;
             }
         }
@@ -217,8 +208,8 @@ void log_BLOCKED(string cli_ip) {
     cse4589_print_and_log("[%s:SUCCESS]\n", cmd.c_str());
     for (int i = 0; i < hd->blockeduser.size(); ++i) {
         Client* new_hd = getClient(-1, hd->blockeduser[i]);
-        cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1, new_hd->hostname.c_str(),
-                              new_hd->ip.c_str(), new_hd->port.c_str());
+        cse4589_print_and_log("%-5d%-35s%-20s%-8s\n", i + 1,
+                new_hd->hostname.c_str(), new_hd->ip.c_str(), new_hd->port.c_str());
     }
     cse4589_print_and_log("[%s:END]\n", cmd.c_str());
 }
@@ -231,7 +222,7 @@ void log_GeneralInfo(string type){
 
     // different cases
     if(type == "AUTHOR"){
-        string ubit_name = "";
+        string ubit_name = "xingyuya";
         cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name.c_str());
     }
     if(type == "IP"){
@@ -243,10 +234,8 @@ void log_GeneralInfo(string type){
     if(type == "STATISTICS"){
         sort(socketlist.begin(), socketlist.end());
         for (int i = 0; i < socketlist.size(); ++i) {
-            cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1,
-                                  socketlist[i].hostname.c_str(),
-                                  socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv,
-                                  socketlist[i].status.c_str());
+            cse4589_print_and_log("%-5d%-35s%-8d%-8d%-8s\n", i + 1, socketlist[i].hostname.c_str(),
+                                  socketlist[i].num_msg_sent, socketlist[i].num_msg_rcv, socketlist[i].status.c_str());
         }
     }
     if(type == "LIST"){
@@ -255,8 +244,7 @@ void log_GeneralInfo(string type){
             if(socketlist[i].status == "logged-out"){
                 continue;
             }
-            cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1,
-                                  socketlist[i].hostname.c_str(),
+            cse4589_print_and_log("%-5d%-35s%-20s%-8d\n", i + 1, socketlist[i].hostname.c_str(),
                                   socketlist[i].ip.c_str(), atoi(socketlist[i].port.c_str()));
         }
     }
@@ -267,28 +255,22 @@ void log_GeneralInfo(string type){
 
 //----------------------------------clientEnd---------------------------------------//
 void clientEnd(char *port){
-    // client status
     bool loged_in = false;
 
-    // client socket
     FD_ZERO(&masterfds);
     FD_SET(0, &masterfds);
     fdmax = 2;
     
-    // my server/ex-server info
     string myServerIP;
     string myServerPORT;
 
-    // save received message
     char message[BUFSIZ];
     string msg;
     vector<string> msg_buf;
     vector<string> msg_vec;
 
-    // initialization
     initMyAddr(port);
     
-    // main loop handling instructions
     while(true){
         // copy fds
         readfds = masterfds;
@@ -305,7 +287,7 @@ void clientEnd(char *port){
                 read(STDIN,message,sizeof(message));
                 msg = message;
            	    msg = msg.substr(0, msg.length() - 1);
-                fflush(0); // 这里不flush的话，会有bug吗？
+                fflush(0);
                 split_msg(msg, ' ', msg_vec);
 
                 // for different instructions
@@ -328,7 +310,6 @@ void clientEnd(char *port){
                 }else if(msg_vec[0] == "LIST"){
                     log_GeneralInfo(msg_vec[0]);
                 }else if(msg_vec[0] == "BLOCK"){
-                    // if block user not valid or not in the list
                     if (!valid_ip(msg_vec[1]) || getClient(-1, msg_vec[1]) == NULL)
                     {
                         log_ERROR("BLOCK");
@@ -336,9 +317,7 @@ void clientEnd(char *port){
                     }
 
                     Client *hd = getClient(-1, myIP);
-                    vector<string>::iterator ret;
-                    ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
-                    if (ret != hd->blockeduser.end())
+                    if (find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]) != hd->blockeduser.end())
                     {
                         log_ERROR("BLOCK");
                         continue;
@@ -358,9 +337,7 @@ void clientEnd(char *port){
                         send(sockfd, (const char *)msg.c_str(), msg.length(), 0);
                         log_GeneralInfo("UNBLOCK");
                     }else{
-                        vector<string>::iterator ret;
-                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]);
-                        if (ret == hd->blockeduser.end()){
+                        if (find(hd->blockeduser.begin(), hd->blockeduser.end(), msg_vec[1]) == hd->blockeduser.end()){
                             continue;
                         }
                         msg = "UNBLOCK " + myIP + " " + msg_vec[1];
@@ -387,7 +364,6 @@ void clientEnd(char *port){
                     log_GeneralInfo("BROADCAST");
                 }
             }else if(FD_ISSET(sockfd, &readfds)){
-                // receive message from server
                 memset(message, 0, sizeof(message));
                 if(recv(sockfd, message, sizeof(message), 0) == 0){
                     // this client is closed by server
@@ -426,18 +402,17 @@ void clientEnd(char *port){
             select(fdmax+1, &readfds, NULL, NULL, NULL);
 
             // two cases: 1) has no instruction 2) has new instruction
-            // 1) no instructions, continue to listening
             if(FD_ISSET(0, &readfds) == 0){
                 continue;
             }
-            // 2) has new instruction
+
             memset(message, 0, sizeof(message));
             read(STDIN,message,sizeof(message));
             msg = message;
 
            	msg = msg.substr(0, msg.length() - 1);
 
-            fflush(0); // 这里不flush的话，会有bug吗？
+            fflush(0);
             split_msg(msg, ' ', msg_vec);
             // for different instructions
             if(msg_vec[0] == "AUTHOR" || msg_vec[0] == "IP" || msg_vec[0] == "PORT"){
@@ -636,14 +611,11 @@ void serverEnd(string server_port){
                     split_msg(msg,' ',msg_p);
                     
                     if(msg_p[0] == "LOGIN"){
-                        string host = msg_p[1];
-                        string host_ip = msg_p[2];
-                        string port = msg_p[3];
                         Client *hd = getClient(fdtemp);
-                        
+
                         if (hd == NULL)
                         {
-                            Client hd(fdtemp, host, host_ip, port);
+                            Client hd(fdtemp, msg_p[1], msg_p[2], msg_p[3]);
                             socketlist.push_back(hd);
                         }
                         else
@@ -653,11 +625,8 @@ void serverEnd(string server_port){
                             {
                                 for (vector<string>::iterator it = hd->msgbuffer.begin(); it < hd->msgbuffer.end(); it++)
                                 {
-                                    string mgs = *it;
-                                    send(hd->cfd, (const char *)mgs.c_str(), mgs.length(), 0);
+                                    send(hd->cfd, (const char *)(*it).c_str(), (*it).length(), 0);
 
-                                    //　这里在转发时候，打一次ｌｏｇ
-                                    //　但是不确定是不是这里的问题
                                     split_msg(msg,' ',msg_p);
                                     string org_ip = msg_p[1];
                                     string tar_ip = (msg_p[0] == "BROADCAST") ? "255.255.255.255" : msg_p[2];
@@ -677,7 +646,7 @@ void serverEnd(string server_port){
                         }
                         
                         send(fdtemp, message.c_str(), strlen(message.c_str()), 0);
-                        break;}
+                    }
                     
                     if(msg_p[0] == "LOGOUT"){
                         cout << "entered logout" << endl;
@@ -732,9 +701,7 @@ void serverEnd(string server_port){
                                 continue;
                             }
                             Client *hd = getClient(-1, socketlist[i].ip);
-                            vector<string>::iterator ret;
-                            ret = find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip);
-                            if (ret == socketlist[i].blockeduser.end())
+                            if (find(socketlist[i].blockeduser.begin(), socketlist[i].blockeduser.end(), from_ip) == socketlist[i].blockeduser.end())
                             {
                                 if (socketlist[i].status == "logged-in")
                                 {
@@ -797,9 +764,7 @@ void serverEnd(string server_port){
 
                         Client *hd2 = getClient(-1, from_ip);
                         
-                        vector<string>::iterator ret;
-                        ret = find(hd->blockeduser.begin(), hd->blockeduser.end(), from_ip);
-                        if (ret != hd->blockeduser.end())
+                        if (find(hd->blockeduser.begin(), hd->blockeduser.end(), from_ip) != hd->blockeduser.end())
                         {
                             continue;
                         }
