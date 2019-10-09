@@ -1,4 +1,4 @@
-author              0/0
+author              TRUE / FALSE
 startup             5/5
 ip                  5/5
 port                2.5/2.5
@@ -13,7 +13,7 @@ logout              2.5/2.5
 buffer              0
 exit                2.5/2.5
 statistics          5/5
-exception_login     0/2
+exception_login     2/2
 exception_send      2/2
 exception_block     2/2
 exception_unblock   2/2
