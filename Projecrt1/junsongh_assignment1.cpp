@@ -222,7 +222,7 @@ void log_GeneralInfo(string type){
 
     // different cases
     if(type == "AUTHOR"){
-        string ubit_name = "xingyuya";
+        string ubit_name = "junsongh";
         cse4589_print_and_log("I, %s, have read and understood the course academic integrity policy.\n",  ubit_name.c_str());
     }
     if(type == "IP"){
