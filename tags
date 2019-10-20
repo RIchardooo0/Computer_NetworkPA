@@ -5,43 +5,114 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	//
-BACKLOG	xingyuya_assignment1.cpp	/^#define BACKLOG /;"	d	file:
-Client	xingyuya_assignment1.cpp	/^        Client(int cfd, string hostname, string ip, string port){$/;"	f	class:Client	file:
-Client	xingyuya_assignment1.cpp	/^class Client{$/;"	c	file:
-RT_ERR	xingyuya_assignment1.cpp	/^#define RT_ERR /;"	d	file:
-SERV_PORT	xingyuya_assignment1.cpp	/^#define SERV_PORT /;"	d	file:
-STDIN	xingyuya_assignment1.cpp	/^#define STDIN /;"	d	file:
-blockeduser	xingyuya_assignment1.cpp	/^        vector<string> blockeduser;$/;"	m	class:Client	typeref:typename:vector<string>	file:
-cfd	xingyuya_assignment1.cpp	/^        int cfd;$/;"	m	class:Client	typeref:typename:int	file:
-clientEnd	xingyuya_assignment1.cpp	/^void clientEnd(char *port){$/;"	f	typeref:typename:void
-fdmax	xingyuya_assignment1.cpp	/^int fdmax;$/;"	v	typeref:typename:int
-getClient	xingyuya_assignment1.cpp	/^Client* getClient(int cfd = -1, string ip = "", string port = "") {$/;"	f	typeref:typename:Client *
-hints	xingyuya_assignment1.cpp	/^struct addrinfo hints;$/;"	v	typeref:struct:addrinfo
-hostname	xingyuya_assignment1.cpp	/^        string hostname;$/;"	m	class:Client	typeref:typename:string	file:
-initMyAddr	xingyuya_assignment1.cpp	/^void initMyAddr(const char* port){$/;"	f	typeref:typename:void
-ip	xingyuya_assignment1.cpp	/^        string ip;$/;"	m	class:Client	typeref:typename:string	file:
-log_BLOCKED	xingyuya_assignment1.cpp	/^void log_BLOCKED(string cli_ip) {$/;"	f	typeref:typename:void
-log_Client_EVENT	xingyuya_assignment1.cpp	/^void log_Client_EVENT(string client_ip, string msg) {$/;"	f	typeref:typename:void
-log_ERROR	xingyuya_assignment1.cpp	/^void log_ERROR(string cmd) {$/;"	f	typeref:typename:void
-log_GeneralInfo	xingyuya_assignment1.cpp	/^void log_GeneralInfo(string type){$/;"	f	typeref:typename:void
-log_Server_EVENT	xingyuya_assignment1.cpp	/^void log_Server_EVENT(string from_ip, string msg, string to_ip) {$/;"	f	typeref:typename:void
-main	xingyuya_assignment1.cpp	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
-masterfds	xingyuya_assignment1.cpp	/^fd_set masterfds;$/;"	v	typeref:typename:fd_set
-msgbuffer	xingyuya_assignment1.cpp	/^        vector<string> msgbuffer;$/;"	m	class:Client	typeref:typename:vector<string>	file:
-myAddrInfo	xingyuya_assignment1.cpp	/^struct addrinfo *myAddrInfo;$/;"	v	typeref:struct:addrinfo *
-myHostname	xingyuya_assignment1.cpp	/^string myHostname;$/;"	v	typeref:typename:string
-myIP	xingyuya_assignment1.cpp	/^string myIP;$/;"	v	typeref:typename:string
-myPort	xingyuya_assignment1.cpp	/^string myPort;$/;"	v	typeref:typename:string
-num_msg_rcv	xingyuya_assignment1.cpp	/^        int num_msg_rcv;$/;"	m	class:Client	typeref:typename:int	file:
-num_msg_sent	xingyuya_assignment1.cpp	/^        int num_msg_sent;$/;"	m	class:Client	typeref:typename:int	file:
-operator <	xingyuya_assignment1.cpp	/^        bool operator<(const Client &another) const {$/;"	f	class:Client	typeref:typename:bool	file:
-port	xingyuya_assignment1.cpp	/^        string port;$/;"	m	class:Client	typeref:typename:string	file:
-readfds	xingyuya_assignment1.cpp	/^fd_set readfds;$/;"	v	typeref:typename:fd_set
-serverEnd	xingyuya_assignment1.cpp	/^void serverEnd(string server_port){$/;"	f	typeref:typename:void
-socketlist	xingyuya_assignment1.cpp	/^vector<Client> socketlist;$/;"	v	typeref:typename:vector<Client>
-sockfd	xingyuya_assignment1.cpp	/^int sockfd;$/;"	v	typeref:typename:int
-space	xingyuya_assignment1.cpp	/^string space = " ";$/;"	v	typeref:typename:string
-split_msg	xingyuya_assignment1.cpp	/^void split_msg(string &src, char spt, vector<string> &dest){$/;"	f	typeref:typename:void
-status	xingyuya_assignment1.cpp	/^        string status;$/;"	m	class:Client	typeref:typename:string	file:
-valid_ip	xingyuya_assignment1.cpp	/^bool valid_ip(string ip_test) {$/;"	f	typeref:typename:bool
-valid_port	xingyuya_assignment1.cpp	/^bool valid_port(string port_test){$/;"	f	typeref:typename:bool
+A	assignment2/src/simulator.cpp	/^#define   A /;"	d	file:
+A_application	assignment2/src/simulator.cpp	/^int A_application = 0;$/;"	v	typeref:typename:int
+A_init	assignment2/src/abt.cpp	/^void A_init()$/;"	f	typeref:typename:void
+A_init	assignment2/src/gbn.cpp	/^void A_init()$/;"	f	typeref:typename:void
+A_init	assignment2/src/sr.cpp	/^void A_init()$/;"	f	typeref:typename:void
+A_input	assignment2/src/abt.cpp	/^void A_input(struct pkt packet)$/;"	f	typeref:typename:void
+A_input	assignment2/src/gbn.cpp	/^void A_input(struct pkt packet)$/;"	f	typeref:typename:void
+A_input	assignment2/src/sr.cpp	/^void A_input(struct pkt packet)$/;"	f	typeref:typename:void
+A_output	assignment2/src/abt.cpp	/^void A_output(struct msg message)$/;"	f	typeref:typename:void
+A_output	assignment2/src/gbn.cpp	/^void A_output(struct msg message)$/;"	f	typeref:typename:void
+A_output	assignment2/src/sr.cpp	/^void A_output(struct msg message)$/;"	f	typeref:typename:void
+A_timerinterrupt	assignment2/src/abt.cpp	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
+A_timerinterrupt	assignment2/src/gbn.cpp	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
+A_timerinterrupt	assignment2/src/sr.cpp	/^void A_timerinterrupt()$/;"	f	typeref:typename:void
+A_transport	assignment2/src/simulator.cpp	/^int A_transport = 0;$/;"	v	typeref:typename:int
+B	assignment2/src/simulator.cpp	/^#define   B /;"	d	file:
+BACKLOG	assignment1/xingyuya_assignment1.cpp	/^#define BACKLOG /;"	d	file:
+B_application	assignment2/src/simulator.cpp	/^int B_application = 0;$/;"	v	typeref:typename:int
+B_init	assignment2/src/abt.cpp	/^void B_init()$/;"	f	typeref:typename:void
+B_init	assignment2/src/gbn.cpp	/^void B_init()$/;"	f	typeref:typename:void
+B_init	assignment2/src/sr.cpp	/^void B_init()$/;"	f	typeref:typename:void
+B_input	assignment2/src/abt.cpp	/^void B_input(struct pkt packet)$/;"	f	typeref:typename:void
+B_input	assignment2/src/gbn.cpp	/^void B_input(struct pkt packet)$/;"	f	typeref:typename:void
+B_input	assignment2/src/sr.cpp	/^void B_input(struct pkt packet)$/;"	f	typeref:typename:void
+B_transport	assignment2/src/simulator.cpp	/^int B_transport = 0;$/;"	v	typeref:typename:int
+CSE589-Network	README.md	/^# CSE589-Network$/;"	c
+Client	assignment1/xingyuya_assignment1.cpp	/^        Client(int cfd, string hostname, string ip, string port){$/;"	f	class:Client	file:
+Client	assignment1/xingyuya_assignment1.cpp	/^class Client{$/;"	c	file:
+FROM_LAYER3	assignment2/src/simulator.cpp	/^#define  FROM_LAYER3 /;"	d	file:
+FROM_LAYER5	assignment2/src/simulator.cpp	/^#define  FROM_LAYER5 /;"	d	file:
+OFF	assignment2/src/simulator.cpp	/^#define  OFF /;"	d	file:
+ON	assignment2/src/simulator.cpp	/^#define  ON /;"	d	file:
+RT_ERR	assignment1/xingyuya_assignment1.cpp	/^#define RT_ERR /;"	d	file:
+SERV_PORT	assignment1/xingyuya_assignment1.cpp	/^#define SERV_PORT /;"	d	file:
+STDIN	assignment1/xingyuya_assignment1.cpp	/^#define STDIN /;"	d	file:
+TIMER_INTERRUPT	assignment2/src/simulator.cpp	/^#define  TIMER_INTERRUPT /;"	d	file:
+TRACE	assignment2/src/simulator.cpp	/^int TRACE = 1;             \/* for my debugging *\/$/;"	v	typeref:typename:int
+application_msgs	assignment2/src/simulator.cpp	/^}application_msgs[1000];$/;"	v	typeref:struct:msg_track[1000]
+blockeduser	assignment1/xingyuya_assignment1.cpp	/^        vector<string> blockeduser;$/;"	m	class:Client	typeref:typename:vector<string>	file:
+cfd	assignment1/xingyuya_assignment1.cpp	/^        int cfd;$/;"	m	class:Client	typeref:typename:int	file:
+clientEnd	assignment1/xingyuya_assignment1.cpp	/^void clientEnd(char *port){$/;"	f	typeref:typename:void
+corruptprob	assignment2/src/simulator.cpp	/^float corruptprob;         \/* probability that one bit is packet is flipped *\/$/;"	v	typeref:typename:float
+cur_msg_recv	assignment2/src/simulator.cpp	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
+cur_msg_sent	assignment2/src/simulator.cpp	/^int cur_msg_sent = 0, cur_msg_recv = 0;$/;"	v	typeref:typename:int
+delivered	assignment2/src/simulator.cpp	/^  int delivered;$/;"	m	struct:msg_track	typeref:typename:int	file:
+display_usage	assignment2/src/simulator.cpp	/^void display_usage(char *filename)$/;"	f	typeref:typename:void
+event	assignment2/src/simulator.cpp	/^struct event {$/;"	s	file:
+eventity	assignment2/src/simulator.cpp	/^   int eventity;           \/* entity where event occurs *\/$/;"	m	struct:event	typeref:typename:int	file:
+evlist	assignment2/src/simulator.cpp	/^struct event *evlist = NULL;   \/* the event list *\/$/;"	v	typeref:struct:event *
+evtime	assignment2/src/simulator.cpp	/^   float evtime;           \/* event time *\/$/;"	m	struct:event	typeref:typename:float	file:
+evtype	assignment2/src/simulator.cpp	/^   int evtype;             \/* event type code *\/$/;"	m	struct:event	typeref:typename:int	file:
+fdmax	assignment1/xingyuya_assignment1.cpp	/^int fdmax;$/;"	v	typeref:typename:int
+generate_next_arrival	assignment2/src/simulator.cpp	/^void generate_next_arrival()$/;"	f	typeref:typename:void
+getClient	assignment1/xingyuya_assignment1.cpp	/^Client* getClient(int cfd = -1, string ip = "", string port = "") {$/;"	f	typeref:typename:Client *
+get_sim_time	assignment2/src/simulator.cpp	/^float get_sim_time()$/;"	f	typeref:typename:float
+getwinsize	assignment2/src/simulator.cpp	/^int getwinsize()$/;"	f	typeref:typename:int
+hints	assignment1/xingyuya_assignment1.cpp	/^struct addrinfo hints;$/;"	v	typeref:struct:addrinfo
+hostname	assignment1/xingyuya_assignment1.cpp	/^        string hostname;$/;"	m	class:Client	typeref:typename:string	file:
+init	assignment2/src/simulator.cpp	/^void init(int seed)                         \/* initialize the simulator *\/$/;"	f	typeref:typename:void
+initMyAddr	assignment1/xingyuya_assignment1.cpp	/^void initMyAddr(const char* port){$/;"	f	typeref:typename:void
+insertevent	assignment2/src/simulator.cpp	/^void insertevent(struct event *p)$/;"	f	typeref:typename:void
+ip	assignment1/xingyuya_assignment1.cpp	/^        string ip;$/;"	m	class:Client	typeref:typename:string	file:
+isNumber	assignment2/src/simulator.cpp	/^int isNumber(char *input)$/;"	f	typeref:typename:int
+jimsrand	assignment2/src/simulator.cpp	/^float jimsrand()$/;"	f	typeref:typename:float
+lambda	assignment2/src/simulator.cpp	/^float lambda;              \/* arrival rate of messages from layer 5 *\/$/;"	v	typeref:typename:float
+log_BLOCKED	assignment1/xingyuya_assignment1.cpp	/^void log_BLOCKED(string cli_ip) {$/;"	f	typeref:typename:void
+log_Client_EVENT	assignment1/xingyuya_assignment1.cpp	/^void log_Client_EVENT(string client_ip, string msg) {$/;"	f	typeref:typename:void
+log_ERROR	assignment1/xingyuya_assignment1.cpp	/^void log_ERROR(string cmd) {$/;"	f	typeref:typename:void
+log_GeneralInfo	assignment1/xingyuya_assignment1.cpp	/^void log_GeneralInfo(string type){$/;"	f	typeref:typename:void
+log_Server_EVENT	assignment1/xingyuya_assignment1.cpp	/^void log_Server_EVENT(string from_ip, string msg, string to_ip) {$/;"	f	typeref:typename:void
+lossprob	assignment2/src/simulator.cpp	/^float lossprob;            \/* probability that a packet is dropped  *\/$/;"	v	typeref:typename:float
+main	assignment1/xingyuya_assignment1.cpp	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
+main	assignment2/src/simulator.cpp	/^int main(int argc, char **argv)$/;"	f	typeref:typename:int
+masterfds	assignment1/xingyuya_assignment1.cpp	/^fd_set masterfds;$/;"	v	typeref:typename:fd_set
+msg_chars	assignment2/src/simulator.cpp	/^  char msg_chars[20];$/;"	m	struct:msg_track	typeref:typename:char[20]	file:
+msg_track	assignment2/src/simulator.cpp	/^struct msg_track {$/;"	s	file:
+msgbuffer	assignment1/xingyuya_assignment1.cpp	/^        vector<string> msgbuffer;$/;"	m	class:Client	typeref:typename:vector<string>	file:
+myAddrInfo	assignment1/xingyuya_assignment1.cpp	/^struct addrinfo *myAddrInfo;$/;"	v	typeref:struct:addrinfo *
+myHostname	assignment1/xingyuya_assignment1.cpp	/^string myHostname;$/;"	v	typeref:typename:string
+myIP	assignment1/xingyuya_assignment1.cpp	/^string myIP;$/;"	v	typeref:typename:string
+myPort	assignment1/xingyuya_assignment1.cpp	/^string myPort;$/;"	v	typeref:typename:string
+ncorrupt	assignment2/src/simulator.cpp	/^int ncorrupt;              \/* number corrupted by media*\/$/;"	v	typeref:typename:int
+next	assignment2/src/simulator.cpp	/^   struct event *next;$/;"	m	struct:event	typeref:struct:event *	file:
+nlost	assignment2/src/simulator.cpp	/^int   nlost;               \/* number lost in media *\/$/;"	v	typeref:typename:int
+nsim	assignment2/src/simulator.cpp	/^int nsim = 0;              \/* number of messages from 5 to 4 so far *\/$/;"	v	typeref:typename:int
+nsimmax	assignment2/src/simulator.cpp	/^int nsimmax = 0;           \/* number of msgs to generate, then stop *\/$/;"	v	typeref:typename:int
+ntolayer3	assignment2/src/simulator.cpp	/^int   ntolayer3;           \/* number sent into layer 3 *\/$/;"	v	typeref:typename:int
+num_msg_rcv	assignment1/xingyuya_assignment1.cpp	/^        int num_msg_rcv;$/;"	m	class:Client	typeref:typename:int	file:
+num_msg_sent	assignment1/xingyuya_assignment1.cpp	/^        int num_msg_sent;$/;"	m	class:Client	typeref:typename:int	file:
+operator <	assignment1/xingyuya_assignment1.cpp	/^        bool operator<(const Client &another) const {$/;"	f	class:Client	typeref:typename:bool	file:
+pktptr	assignment2/src/simulator.cpp	/^   struct pkt *pktptr;     \/* ptr to packet (if any) assoc w\/ this event *\/$/;"	m	struct:event	typeref:struct:pkt *	file:
+port	assignment1/xingyuya_assignment1.cpp	/^        string port;$/;"	m	class:Client	typeref:typename:string	file:
+prev	assignment2/src/simulator.cpp	/^   struct event *prev;$/;"	m	struct:event	typeref:struct:event *	file:
+printevlist	assignment2/src/simulator.cpp	/^void printevlist()$/;"	f	typeref:typename:void
+read_arg_float	assignment2/src/simulator.cpp	/^float read_arg_float(char c)$/;"	f	typeref:typename:float
+read_arg_int	assignment2/src/simulator.cpp	/^int read_arg_int(char c)$/;"	f	typeref:typename:int
+readfds	assignment1/xingyuya_assignment1.cpp	/^fd_set readfds;$/;"	v	typeref:typename:fd_set
+serverEnd	assignment1/xingyuya_assignment1.cpp	/^void serverEnd(string server_port){$/;"	f	typeref:typename:void
+socketlist	assignment1/xingyuya_assignment1.cpp	/^vector<Client> socketlist;$/;"	v	typeref:typename:vector<Client>
+sockfd	assignment1/xingyuya_assignment1.cpp	/^int sockfd;$/;"	v	typeref:typename:int
+space	assignment1/xingyuya_assignment1.cpp	/^string space = " ";$/;"	v	typeref:typename:string
+split_msg	assignment1/xingyuya_assignment1.cpp	/^void split_msg(string &src, char spt, vector<string> &dest){$/;"	f	typeref:typename:void
+starttimer	assignment2/src/simulator.cpp	/^void starttimer(int AorB,float increment)$/;"	f	typeref:typename:void
+status	assignment1/xingyuya_assignment1.cpp	/^        string status;$/;"	m	class:Client	typeref:typename:string	file:
+stoptimer	assignment2/src/simulator.cpp	/^void stoptimer(int AorB)$/;"	f	typeref:typename:void
+time_local	assignment2/src/simulator.cpp	/^float time_local = 0;$/;"	v	typeref:typename:float
+tolayer3	assignment2/src/simulator.cpp	/^void tolayer3(int AorB,struct pkt packet)$/;"	f	typeref:typename:void
+tolayer5	assignment2/src/simulator.cpp	/^void tolayer5(int AorB,char *datasent)$/;"	f	typeref:typename:void
+valid_ip	assignment1/xingyuya_assignment1.cpp	/^bool valid_ip(string ip_test) {$/;"	f	typeref:typename:bool
+valid_port	assignment1/xingyuya_assignment1.cpp	/^bool valid_port(string port_test){$/;"	f	typeref:typename:bool
+win_size	assignment2/src/simulator.cpp	/^int win_size;$/;"	v	typeref:typename:int
