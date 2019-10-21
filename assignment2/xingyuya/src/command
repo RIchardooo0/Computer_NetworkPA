@@ -1,0 +1,33 @@
+./run_experiments -m 1000 -t 50 -l 0.0 -c 0.1 -w 10 -p ../junsongh/abt
+./sanity_tests -p ../junsongh/abt -r ./run_experiments
+
+Sanity
+	ABT
+	./run_experiments -m 20 -t 1000 -l 0.0 -c 0.0 -w 50 -p ../junsongh/abt
+	./sanity_tests -p ../junsongh/abt -r ./run_experiments
+	GBN,SR
+	./run_experiments -m 20 -t 50 -l 0.0 -c 0.0 -w 50 -p ../junsongh/gbn
+	./sanity_tests -p ../junsongh/gbn -r ./run_experiments
+	./run_experiments -m 20 -t 50 -l 0.0 -c 0.0 -w 50 -p ../junsongh/sr
+	./sanity_tests -p ../junsongh/sr -r ./run_experiments
+
+Basic	
+	ABT
+	./run_experiments -m 20 -t 1000 -l 0.1 -c 0.0 -w 50 -p ../junsongh/abt
+	./basic_tests -p ../junsongh/abt -r ./run_experiments
+	GBN,SR
+	./run_experiments -m 20 -t 50 -l 0.1 -c 0.0 -w 50 -p ../junsongh/gbn
+	./basic_tests -p ../junsongh/gbn -r ./run_experiments
+	./run_experiments -m 20 -t 50 -l 0.0 -c 0.0 -w 50 -p ../junsongh/sr
+	./basic_tests -p ../junsongh/sr -r ./run_experiments
+
+ADVANCED test
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.0 -w 10 -p ../junsongh/abt
+	./advanced_tests -p ../junsongh/abt -r ./run_experiments
+
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.0 -w 10 -p ../junsongh/gbn
+	./advanced_tests -p ../junsongh/gbn -r ./run_experiments
+
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.0 -w 10 -p ../junsongh/sr
+	./advanced_tests -p ../junsongh/sr -r ./run_experiments
+

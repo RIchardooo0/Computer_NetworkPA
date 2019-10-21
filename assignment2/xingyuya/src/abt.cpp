@@ -6,6 +6,7 @@
 #include <stdlib.h>
 using namespace std;
 
+
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
 
@@ -75,12 +76,14 @@ void A_output(struct msg message)
 void A_input(struct pkt packet)
 {
 	if(packet.checksum == get_check_sum(&packet)
-		&& packet.acknum == acknum && sending_list.front().seqnum == packet.seqnum){
-		stoptimer(0);
-		sending_list.erase(sending_list.begin());
-		if(sending_list.size() > 0){
-			send_pkt();
-		}
+        && packet.acknum == acknum && sending_list.front().seqnum == packet.seqnum){
+        stoptimer(0);
+        sending_list.erase(sending_list.begin());
+        if(sending_list.size() > 0){
+            send_pkt();
+        }else if(sending_list.size() == 0 ){
+            can_send = true;
+        }
 	}
 }
 
@@ -110,8 +113,8 @@ void B_input(struct pkt packet)
 	struct pkt *ack = get_packet(packet.seqnum, 1, NULL);
 	tolayer3(1, *ack);
 	if(packet.seqnum == waitnum){
-		tolayer5(1, packet.payload);
-		waitnum++;
+        tolayer5(1, packet.payload);
+        waitnum++;
 	}
 }
 
