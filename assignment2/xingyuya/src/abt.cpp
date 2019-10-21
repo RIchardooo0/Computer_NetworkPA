@@ -51,7 +51,7 @@ static pkt* get_packet(int seqnum,int acknum, char* data){
 	}else{
     	memset(packet->payload, 0, 20);
 	}
-    packet->checksum = checkSum(packet);
+    packet->checksum = get_check_sum(packet);
     return packet;
 }
 
@@ -76,12 +76,14 @@ void A_output(struct msg message)
 void A_input(struct pkt packet)
 {
 	if(packet.checksum == get_check_sum(&packet)
-		&& packet.acknum == acknum && sending_list.front().seqnum = packet.seqnum){
+		&& packet.acknum == 1 && sending_list.front().seqnum == packet.seqnum){
 		stoptimer(0);
 		sending_list.erase(sending_list.begin());
 		if(sending_list.size() > 0){
 			send_pkt();
-		}
+        }else if(sending_list.size() == 0 ){
+            can_send = true;
+        }
 	}
 }
 
@@ -111,7 +113,7 @@ void B_input(struct pkt packet)
 	struct pkt *ack = get_packet(packet.seqnum, 1, NULL);
 	tolayer3(1, *ack);
 	if(packet.seqnum == waitnum){
-		tolayer5(1, packets.payload);
+		tolayer5(1, packet.payload);
 		waitnum++;
 	}
 }
