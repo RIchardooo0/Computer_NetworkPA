@@ -1,4 +1,9 @@
 #include "../include/simulator.h"
+#include <string.h>
+#include <string>
+#include <vector>
+#include <stdio.h>
+#include <math.h>
 
 /* ******************************************************************
  ALTERNATING BIT AND GO-BACK-N NETWORK EMULATOR: VERSION 1.1  J.F.Kurose
