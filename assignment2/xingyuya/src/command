@@ -31,3 +31,101 @@ ADVANCED test
 	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.0 -w 10 -p ../junsongh/sr
 	./advanced_tests -p ../junsongh/sr -r ./run_experiments
 
+
+Experiment 1
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.2 -w 10 -p ../junsongh/abt -o abt1
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/abt -o abt2
+	./run_experiments -m 1000 -t 50 -l 0.4 -c 0.2 -w 10 -p ../junsongh/abt -o abt3
+	./run_experiments -m 1000 -t 50 -l 0.6 -c 0.2 -w 10 -p ../junsongh/abt -o abt4
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/abt -o abt5
+
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.2 -w 10 -p ../junsongh/gbn -o gbn_10_1
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/gbn -o gbn_10_2
+	./run_experiments -m 1000 -t 50 -l 0.4 -c 0.2 -w 10 -p ../junsongh/gbn -o gbn_10_3
+	./run_experiments -m 1000 -t 50 -l 0.6 -c 0.2 -w 10 -p ../junsongh/gbn -o gbn_10_4
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/gbn -o gbn_10_5
+
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.2 -w 50 -p ../junsongh/gbn -o gbn_50_1
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 50 -p ../junsongh/gbn -o gbn_50_2
+	./run_experiments -m 1000 -t 50 -l 0.4 -c 0.2 -w 50 -p ../junsongh/gbn -o gbn_50_3
+	./run_experiments -m 1000 -t 50 -l 0.6 -c 0.2 -w 50 -p ../junsongh/gbn -o gbn_50_4
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 50 -p ../junsongh/gbn -o gbn_50_5
+
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.2 -w 10 -p ../junsongh/sr -o sr_10_1
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/sr -o sr_10_2
+	./run_experiments -m 1000 -t 50 -l 0.4 -c 0.2 -w 10 -p ../junsongh/sr -o sr_10_3
+	./run_experiments -m 1000 -t 50 -l 0.6 -c 0.2 -w 10 -p ../junsongh/sr -o sr_10_4
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/sr -o sr_10_5
+	
+	./run_experiments -m 1000 -t 50 -l 0.1 -c 0.2 -w 50 -p ../junsongh/sr -o sr_50_1
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 50 -p ../junsongh/sr -o sr_50_2
+	./run_experiments -m 1000 -t 50 -l 0.4 -c 0.2 -w 50 -p ../junsongh/sr -o sr_50_3
+	./run_experiments -m 1000 -t 50 -l 0.6 -c 0.2 -w 50 -p ../junsongh/sr -o sr_50_4
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 50 -p ../junsongh/sr -o sr_50_5
+
+Experiment 2
+	loss:0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/abt -o 2abt_10_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/sr -o 2sr_10_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 50 -p ../junsongh/abt -o 2abt_50_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 50 -p ../junsongh/sr -o 2sr_50_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 100 -p ../junsongh/abt -o 2abt_100_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 100 -p ../junsongh/sr -o 2sr_100_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 200 -p ../junsongh/abt -o 2abt_200_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 200 -p ../junsongh/sr -o 2sr_200_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 500 -p ../junsongh/abt -o 2abt_500_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 500 -p ../junsongh/sr -o 2sr_500_0.2
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 10 -p ../junsongh/abt -o 2abt_10_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 10 -p ../junsongh/sr -o 2sr_10_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 50 -p ../junsongh/abt -o 2abt_50_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 50 -p ../junsongh/sr -o 2sr_50_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 100 -p ../junsongh/abt -o 2abt_100_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 100 -p ../junsongh/sr -o 2sr_100_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 200 -p ../junsongh/abt -o 2abt_200_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 200 -p ../junsongh/sr -o 2sr_200_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 500 -p ../junsongh/abt -o 2abt_500_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 500 -p ../junsongh/sr -o 2sr_500_0.5
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/abt -o 2abt_10_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/sr -o 2sr_10_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 50 -p ../junsongh/abt -o 2abt_50_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 50 -p ../junsongh/sr -o 2sr_50_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 100 -p ../junsongh/abt -o 2abt_100_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 100 -p ../junsongh/sr -o 2sr_100_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 200 -p ../junsongh/abt -o 2abt_200_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 200 -p ../junsongh/sr -o 2sr_200_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 500 -p ../junsongh/abt -o 2abt_500_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 500 -p ../junsongh/sr -o 2sr_500_0.8
+
+
+GBN
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 10 -p ../junsongh/gbn -o 2gbn_10_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 50 -p ../junsongh/gbn -o 2gbn_50_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 100 -p ../junsongh/gbn -o 2gbn_100_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 200 -p ../junsongh/gbn -o 2gbn_200_0.2
+	./run_experiments -m 1000 -t 50 -l 0.2 -c 0.2 -w 500 -p ../junsongh/gbn -o 2gbn_500_0.2
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 10 -p ../junsongh/gbn -o 2gbn_10_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 50 -p ../junsongh/gbn -o 2gbn_50_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 100 -p ../junsongh/gbn -o 2gbn_100_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 200 -p ../junsongh/gbn -o 2gbn_200_0.5
+	./run_experiments -m 1000 -t 50 -l 0.5 -c 0.2 -w 500 -p ../junsongh/gbn -o 2gbn_500_0.5
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 10 -p ../junsongh/gbn -o 2gbn_10_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 500 -p ../junsongh/gbn -o 2gbn_500_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 200 -p ../junsongh/gbn -o 2gbn_200_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 100 -p ../junsongh/gbn -o 2gbn_100_0.8
+	./run_experiments -m 1000 -t 50 -l 0.8 -c 0.2 -w 50 -p ../junsongh/gbn -o 2gbn_50_0.8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
